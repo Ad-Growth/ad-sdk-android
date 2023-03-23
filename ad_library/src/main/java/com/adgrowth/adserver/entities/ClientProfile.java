@@ -4,11 +4,8 @@ import java.util.ArrayList;
 
 
 public class ClientProfile {
-    public static String MALE = "male";
-    public static String FEMALE = "female";
-    public static String OTHER = "other";
-    private String gender;
-    private int age;
+    private Gender gender = Gender.ALL;
+    private int age = 13;
     private ArrayList<String> interests = new ArrayList<>();
 
 
@@ -21,8 +18,13 @@ public class ClientProfile {
     }
 
     public void addInterest(String interest) {
-
         this.interests.add(interest);
+    }
+
+
+    public void removeInterest(String interest) {
+        this.interests.removeIf(s -> s.equals(interest));
+
     }
 
     public int getAge() {
@@ -33,11 +35,28 @@ public class ClientProfile {
         this.age = age;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
+
+    public enum Gender {
+        ALL("ALL"), MALE("MALE"), FEMALE("FEMALE");
+
+        private final String name;
+
+        Gender(String s) {
+            name = s;
+        }
+
+        public String toString() {
+            return this.name;
+        }
+
+
+    }
+
 }

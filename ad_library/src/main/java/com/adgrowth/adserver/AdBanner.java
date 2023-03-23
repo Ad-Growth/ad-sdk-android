@@ -1,6 +1,9 @@
 package com.adgrowth.adserver;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
@@ -9,79 +12,127 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
-import com.adgrowth.adserver.constants.BannerAspectRatio;
+import com.adgrowth.adserver.constants.AdBannerSize;
+import com.adgrowth.adserver.constants.AdDimensionType;
+import com.adgrowth.adserver.entities.Ad;
+import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.helpers.ScreenHelpers;
+import com.adgrowth.adserver.http.AdRequest;
+
+//import com.adgrowth.adserver.interfaces.BaseCallback;
+import com.adgrowth.adserver.interfaces.BaseAdListener;
 import com.bumptech.glide.Glide;
 
 
 public class AdBanner extends LinearLayout {
-//    private final String unitId;
-//    private final String size;
-
-
+    protected String unitId;
+    protected AdRequest adRequest;
+    protected Ad ad;
     ImageView image;
-    private String image_uri;
-    private int height;
-    private int width;
+    private long height;
+    private long width;
+    private AdDimensionType type = AdDimensionType.BANNER;
+    private BaseAdListener callback;
 
 
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-//
-//        this.getLayoutParams().width = width;
-//        this.getLayoutParams().height = height;
-//
-//    }
-
-    void setupImage (Context context, @Nullable AttributeSet attrs){
-
-        // size = attrs.getAttributeValue("ads", "banner_size");
-        // TODO: calculate height and with with banner_size attribute
-        width = ScreenHelpers.getScreenWidth();
-        height = Math.round(width / BannerAspectRatio.BANNER);
-
-        this.setBackgroundColor(Color.parseColor("#000000"));
-        this.image = new ImageView(context);
-        image.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+    public AdBanner(Context context) {
+        super(context);
+        setupImage(context, null);
     }
-
-    void load() {
-        // TODO: load from api
-        image_uri = "https://resources.construx.com/wp-content/uploads/2016/08/gif-placeholder.gif";
-        present();
-    }
-
-    void present() {
-        Glide.with(this).load(image_uri).into(image);
-        //
-    }
-
 
     public AdBanner(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setupImage(context, attrs);
 
-        // autoLoad = attrs.getAttributeBooleanValue("ads","auto_load");
-        // unitId = attrs.getAttributeStringValue("ads","unit_id");
-
-
-        this.addView(image);
-//        if (autoLoad) {
-            load();
-//        }
     }
 
-    public AdBanner(Context context) {
-        super(context);
-    }
 
+    @SuppressLint("NewApi")
     public AdBanner(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        setupImage(context, attrs);
     }
 
+
+    @SuppressLint("NewApi")
     public AdBanner(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        setupImage(context, attrs);
     }
+
+
+    public void setCallback(BaseAdListener callback) {
+        this.callback = callback;
+    }
+
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        this.getLayoutParams().width = (int) width;
+        this.getLayoutParams().height = (int) height;
+
+    }
+
+    void setupImage(Context context, @Nullable AttributeSet attrs) {
+
+        adRequest = new AdRequest((Activity) context);
+
+        if (attrs != null) {
+            if (attrs.getAttributeValue("ad", "type") != null)
+                type = AdDimensionType.valueOf(attrs.getAttributeValue("ad", "type"));
+            if (attrs.getAttributeValue("ad", "unit_id") != null)
+                unitId = attrs.getAttributeValue("ad", "unit_id");
+        }
+
+        width = ScreenHelpers.getScreenWidth();
+
+        switch (type) {
+            case FULL_BANNER:
+                height = Math.round(width / AdBannerSize.FULL_BANNER);
+                break;
+            case LEADERBOARD:
+                height = Math.round(width / AdBannerSize.LEADERBOARD);
+                break;
+            case LARGE_BANNER:
+                height = Math.round(width / AdBannerSize.LARGE_BANNER);
+                break;
+            case MEDIUM_RECTANGLE:
+                height = Math.round(width / AdBannerSize.MEDIUM_RECTANGLE);
+                break;
+            case BANNER:
+            default:
+                height = Math.round(width / AdBannerSize.BANNER);
+        }
+
+        this.setBackgroundColor(Color.parseColor("#000000"));
+        this.image = new ImageView(context);
+        image.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        this.addView(image);
+        loadAd();
+    }
+
+    private void loadAd() {
+        new Thread(() -> {
+            try {
+                ad = adRequest.getAd(unitId);
+                if (this.callback != null)
+                    this.callback.onLoad();
+                presentAd();
+
+            } catch (AdRequestException e) {
+                if (this.callback != null)
+                    callback.onFailedToLoad(e);
+            }
+
+        }).start();
+    }
+
+    void presentAd() {
+        Glide.with(this).load(ad.getMediaUrl()).into(image);
+        if (callback != null)
+            callback.onImpression();
+    }
+
 }

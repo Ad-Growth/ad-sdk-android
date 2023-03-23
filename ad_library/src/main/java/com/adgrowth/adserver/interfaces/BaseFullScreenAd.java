@@ -1,5 +1,6 @@
-package com.adgrowth.adserver;
+package com.adgrowth.adserver.interfaces;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -15,13 +17,12 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.adgrowth.adserver.R;
 import com.adgrowth.adserver.constants.AdEventType;
 import com.adgrowth.adserver.constants.AdMediaType;
-import com.adgrowth.adserver.constants.AdType;
 import com.adgrowth.adserver.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.http.AdRequest;
-import com.adgrowth.adserver.interfaces.InterstitialCallback;
 import com.adgrowth.adserver.views.AdDialog;
 import com.adgrowth.adserver.views.AdImageView;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -32,38 +33,43 @@ import com.google.android.exoplayer2.ui.StyledPlayerView;
 import java.util.Timer;
 import java.util.TimerTask;
 
-abstract class FullScreenContent implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
+@SuppressLint("NewApi")
+public abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
     protected ImageView imageView;
-    protected InterstitialCallback callback;
+    protected InterstitialAdListener listener;
     protected AdRequest adRequest;
     protected Ad ad;
-    protected Timer timer = new Timer();
+    protected Timer timer;
+    protected Timer countdownTimer;
     protected Activity context;
     protected AdDialog dialog;
     protected ExoPlayer player;
+    protected boolean mediaIsReady = false;
+
     protected StyledPlayerView playerView;
     protected View.OnClickListener onAdClickListener;
+    private int countdown;
 
     public abstract void show(Activity context);
 
+
     public abstract void load(Context context);
 
-    public abstract void onReward(int reward);
 
     protected void prepareDialog() {
-        long duration = getAdDuration();
         dialog = new AdDialog(this.context);
         dialog.setOnShowListener(this);
         dialog.setOnDismissListener(this);
         dialog.setOnCloseListener(onCloseListener);
 
         if (ad.getMediaType() == AdMediaType.VIDEO) {
-            player.createMessage((messageType, payload) -> dialog.showCloseButton())
-                    .setLooper(Looper.getMainLooper())
-                    .setPosition(0, 5_000)
-                    .setDeleteAfterDelivery(false)
-                    .send();
+            long duration = getAdDuration();
+//            player.createMessage((messageType, payload) -> dialog.showCloseButton())
+//                    .setLooper(Looper.getMainLooper())
+//                    .setPosition(0, 5_000)
+//                    .setDeleteAfterDelivery(false)
+//                    .send();
             player.createMessage((messageType, payload) -> presentPostAd())
                     .setLooper(Looper.getMainLooper())
                     .setPosition(0, duration)
@@ -72,9 +78,33 @@ abstract class FullScreenContent implements Application.ActivityLifecycleCallbac
         }
     }
 
+    protected void startShowCloseButtonCountdown() {
+        countdownTimer = new Timer();
 
-    public void setCallback(InterstitialCallback callback) {
-        this.callback = callback;
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+
+                countdown++;
+                Log.d("TAG", "run: TIMER " + countdown);
+                if (countdown >= 5) {
+                    context.runOnUiThread(() -> {
+                        dialog.showCloseButton();
+                        countdownTimer.cancel();
+                        countdownTimer = null;
+
+                    });
+                }
+
+
+            }
+        };
+
+        countdownTimer.scheduleAtFixedRate(task, 1000, 1000);
+    }
+
+    public void setListener(InterstitialAdListener listener) {
+        this.listener = listener;
     }
 
     protected void dismiss() {
@@ -85,12 +115,12 @@ abstract class FullScreenContent implements Application.ActivityLifecycleCallbac
             player.release();
         }
 
-        if (this.callback != null) {
-            this.callback.onDismissed();
+        if (this.listener != null) {
+            this.listener.onDismissed();
         }
 
         dialog.dismiss();
-
+        dialog = null;
         adRequest.sendEvent(ad, AdEventType.DISMISSED);
     }
 
@@ -100,27 +130,31 @@ abstract class FullScreenContent implements Application.ActivityLifecycleCallbac
         player.stop();
         player.release();
         player = null;
-        imageView = new AdImageView(this.context, ad.getPostAdMediaUrl(), onAdClickListener);
+        imageView = new AdImageView(this.context, ad.getPostMediaUrl(), onAdClickListener);
         imageView.setVisibility(View.VISIBLE);
-
-        if (ad.getType() == AdType.REWARDED)
-            this.onReward(ad.getReward());
-
 
         ((LinearLayout) dialog.findViewById(R.id.content_container)).addView(imageView);
     }
 
     @Override
     public void onShow(DialogInterface dialogInterface) {
+        if (this.listener != null) {
+            this.listener.onImpression();
+        }
+
         dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        startShowCloseButtonCountdown();
+
+
+        ad.setConsumed(true);
 
         adRequest.sendEvent(ad, AdEventType.PRINTED);
-
     }
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         dismiss();
     }
 
@@ -142,8 +176,10 @@ abstract class FullScreenContent implements Application.ActivityLifecycleCallbac
         @Override
         public void onPlaybackStateChanged(int playbackState) {
             if (playbackState == Player.STATE_READY) {
-                if (!player.isPlaying())
-                    callback.onLoad();
+                if (!player.isPlaying()) {
+                    mediaIsReady = true;
+                    listener.onLoad();
+                }
             }
 
         }
@@ -151,8 +187,11 @@ abstract class FullScreenContent implements Application.ActivityLifecycleCallbac
         @Override
         public void onPlayerError(PlaybackException error) {
             Player.Listener.super.onPlayerError(error);
-            AdRequestException adRequestException = new AdRequestException(AdRequestException.PLAYBACK_ERROR);
-            callback.onFailedToLoad(adRequestException);
+            if (!mediaIsReady)
+                listener.onFailedToLoad(new AdRequestException(AdRequestException.PLAYBACK_ERROR));
+            else
+                listener.onFailedToShow(Ad.MEDIA_ERROR);
+
         }
 
 
@@ -194,13 +233,22 @@ abstract class FullScreenContent implements Application.ActivityLifecycleCallbac
     public void onActivityResumed(@NonNull Activity activity) {
         if (player != null) {
             player.play();
+            return;
         }
+        if (countdown < 5)
+            startShowCloseButtonCountdown();
     }
 
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
         if (player != null) {
             player.pause();
+            return;
+        }
+
+        if (countdownTimer != null) {
+            countdownTimer.cancel();
+            countdownTimer = null;
         }
     }
 

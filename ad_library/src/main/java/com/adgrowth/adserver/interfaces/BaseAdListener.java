@@ -1,11 +1,8 @@
 package com.adgrowth.adserver.interfaces;
 
-import android.media.MediaPlayer;
-
 import com.adgrowth.adserver.exceptions.AdRequestException;
 
-public abstract class InterstitialCallback {
-
+public abstract class BaseAdListener {
     public void onLoad() {
 
     }
@@ -23,9 +20,4 @@ public abstract class InterstitialCallback {
 
     public void onClicked() {
     }
-
-    public void onDismissed() {
-    }
-
-
 }

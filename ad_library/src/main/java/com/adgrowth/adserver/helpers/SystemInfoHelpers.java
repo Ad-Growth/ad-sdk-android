@@ -11,7 +11,9 @@ public class SystemInfoHelpers {
     public static HashMap getSystemInfo(Context context) {
         HashMap deviceInfo = new HashMap();
         deviceInfo.put("brand", Build.BRAND);
-        deviceInfo.put("device_id", Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
+            deviceInfo.put("device_id", Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
+        }
         deviceInfo.put("model", Build.MODEL);
         deviceInfo.put("build_id", Build.ID);
         deviceInfo.put("sdk", Build.VERSION.SDK_INT);

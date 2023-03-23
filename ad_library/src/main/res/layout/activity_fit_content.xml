@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:backgroundTint="#A6000000"
+        android:backgroundTint="#A6818181"
         android:visibility="gone"
         />
     <LinearLayout
@@ -42,6 +42,11 @@
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/content_container"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:progress="14"
+        android:max="100"
+        android:progressTint="#FFFFFF"
+        android:visibility="gone"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

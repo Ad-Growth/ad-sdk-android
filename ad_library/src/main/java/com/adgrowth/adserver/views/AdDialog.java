@@ -29,8 +29,8 @@ public class AdDialog extends Dialog {
         getWindow().setGravity(Gravity.CENTER);
         getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        closeBtn = findViewById(R.id.close_btn);
-        progressBar = findViewById(R.id.video_progress);
+        closeBtn = (ImageView) findViewById(R.id.close_btn);
+        progressBar = (ProgressBar) findViewById(R.id.video_progress);
         progressBar.setProgress(0);
         progressBar.setMax(100);
     }
@@ -40,6 +40,7 @@ public class AdDialog extends Dialog {
     }
 
     public void setVideoProgress(int progress) {
+        this.progressBar.setVisibility(View.VISIBLE);
         this.progressBar.setProgress(progress);
     }
 

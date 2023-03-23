@@ -1,5 +1,6 @@
 package com.adgrowth.adserver;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
@@ -8,16 +9,17 @@ import android.widget.LinearLayout;
 
 import com.adgrowth.adserver.constants.AdEventType;
 import com.adgrowth.adserver.constants.AdMediaType;
-import com.adgrowth.adserver.constants.AdType;
+import com.adgrowth.adserver.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.helpers.OnClickHelpers;
 import com.adgrowth.adserver.http.AdRequest;
+import com.adgrowth.adserver.interfaces.BaseFullScreenAd;
 import com.adgrowth.adserver.views.AdImageView;
 import com.adgrowth.adserver.views.AdPlayerView;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 
-public class InterstitialAd extends FullScreenContent {
+public class InterstitialAd extends BaseFullScreenAd {
 
 
     private String unitId;
@@ -33,7 +35,7 @@ public class InterstitialAd extends FullScreenContent {
 
             OnClickHelpers.openUrl(context, ad.getActionUrl());
 
-            if (callback != null) callback.onClicked();
+            if (listener != null) listener.onClicked();
 
             adRequest.sendEvent(ad, AdEventType.CLICKED);
         };
@@ -41,16 +43,26 @@ public class InterstitialAd extends FullScreenContent {
     }
 
 
+    @SuppressLint("NewApi")
     @Override
     public void show(Activity context) {
+
+        if (ad == null || !mediaIsReady) {
+            listener.onFailedToShow(Ad.NOT_READY);
+            return;
+        }
+        if (ad.isConsumed()) {
+            listener.onFailedToShow(Ad.ALREADY_CONSUMED);
+            return;
+        }
+
         this.context = context;
-        int type = ad.getMediaType();
+        AdMediaType type = ad.getMediaType();
         context.getApplication().registerActivityLifecycleCallbacks(this);
 
         prepareDialog();
 
-
-        LinearLayout container = dialog.findViewById(R.id.content_container);
+        LinearLayout container = (LinearLayout) dialog.findViewById(R.id.content_container);
         container.setOnClickListener(onAdClickListener);
 
 
@@ -73,14 +85,19 @@ public class InterstitialAd extends FullScreenContent {
 
     @Override
     public void load(Context context) {
+        if (ad != null) {
+            listener.onFailedToLoad(new AdRequestException(AdRequestException.ALREADY_LOADED));
+            return;
+        }
         new Thread(() -> {
             try {
-                ad = adRequest.getAd(AdType.INTERSTITIAL, unitId);
-                Log.d("TAG", "load: "+ad);
-                int type = ad.getMediaType();
+                ad = adRequest.getAd(unitId);
 
+                AdMediaType type = ad.getMediaType();
+                Log.d("TAG", "load: AD: "+ad);
                 if (type == AdMediaType.IMAGE) {
-                    this.callback.onLoad();
+                    mediaIsReady = true;
+                    this.listener.onLoad();
                     return;
                 }
 
@@ -94,15 +111,10 @@ public class InterstitialAd extends FullScreenContent {
 
 
             } catch (AdRequestException e) {
-                callback.onFailedToLoad(e);
+                listener.onFailedToLoad(e);
             }
 
         }).start();
-
-    }
-
-    @Override
-    public void onReward(int reward) {
 
     }
 
