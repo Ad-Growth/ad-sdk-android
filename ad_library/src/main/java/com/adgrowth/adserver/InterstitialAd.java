@@ -66,7 +66,6 @@ public class InterstitialAd extends BaseFullScreenAd {
 
         if (type == AdMediaType.IMAGE) {
             container.addView(imageView);
-            Log.d("TAG", "show: ONSHOWW");
             dialog.show();
             return;
         }
@@ -84,16 +83,17 @@ public class InterstitialAd extends BaseFullScreenAd {
     @Override
     public void load(Activity context) {
         this.context = context;
+        
         if (ad != null) {
             listener.onFailedToLoad(new AdRequestException(AdRequestException.ALREADY_LOADED));
             return;
         }
+
         new Thread(() -> {
             try {
                 ad = adRequest.getAd(unitId);
 
                 AdMediaType type = ad.getMediaType();
-                Log.d("TAG", "load: AD: " + ad);
 
                 if (type == AdMediaType.IMAGE) {
                     imageView = new AdImage(context, ad.getMediaUrl());

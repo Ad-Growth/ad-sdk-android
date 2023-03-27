@@ -79,7 +79,6 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
             public void run() {
 
                 countdown++;
-                Log.d("TAG", "run: TIMER " + countdown);
                 if (countdown >= 5) {
                     context.runOnUiThread(() -> {
                         dialog.showCloseButton();
