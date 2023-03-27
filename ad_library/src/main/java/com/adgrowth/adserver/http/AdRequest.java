@@ -43,7 +43,6 @@ public class AdRequest {
 //      params.put("system_info", systemInfo);
         params.put("orientation", ScreenHelpers.getOrientation(context));
 
-
         params.put("age", (profile.getAge()));
         params.put("gender", profile.getGender());
         params.put("interests", profile.getInterests());

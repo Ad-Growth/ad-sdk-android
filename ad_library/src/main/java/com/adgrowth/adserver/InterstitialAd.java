@@ -2,7 +2,6 @@ package com.adgrowth.adserver;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.LinearLayout;
@@ -13,9 +12,8 @@ import com.adgrowth.adserver.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.helpers.OnClickHelpers;
 import com.adgrowth.adserver.http.AdRequest;
-import com.adgrowth.adserver.interfaces.BaseFullScreenAd;
-import com.adgrowth.adserver.views.AdImageView;
-import com.adgrowth.adserver.views.AdPlayerView;
+import com.adgrowth.adserver.views.AdImage;
+import com.adgrowth.adserver.views.AdPlayer;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 
@@ -67,15 +65,15 @@ public class InterstitialAd extends BaseFullScreenAd {
 
 
         if (type == AdMediaType.IMAGE) {
-            imageView = new AdImageView(context, ad.getMediaUrl(), onAdClickListener);
             container.addView(imageView);
+            Log.d("TAG", "show: ONSHOWW");
             dialog.show();
             return;
         }
 
 
         new Handler(player.getApplicationLooper()).post(() -> {
-            playerView = new AdPlayerView(context, player);
+            playerView = new AdPlayer(context, player);
             container.addView(playerView);
         });
 
@@ -84,7 +82,8 @@ public class InterstitialAd extends BaseFullScreenAd {
     }
 
     @Override
-    public void load(Context context) {
+    public void load(Activity context) {
+        this.context = context;
         if (ad != null) {
             listener.onFailedToLoad(new AdRequestException(AdRequestException.ALREADY_LOADED));
             return;
@@ -94,20 +93,26 @@ public class InterstitialAd extends BaseFullScreenAd {
                 ad = adRequest.getAd(unitId);
 
                 AdMediaType type = ad.getMediaType();
-                Log.d("TAG", "load: AD: "+ad);
+                Log.d("TAG", "load: AD: " + ad);
+
                 if (type == AdMediaType.IMAGE) {
-                    mediaIsReady = true;
-                    this.listener.onLoad();
+                    imageView = new AdImage(context, ad.getMediaUrl());
+                    imageView.setOnClickListener(onAdClickListener);
+                    imageView.addListener(imageListener);
+                    imageView.prepare();
                     return;
                 }
 
-                player = new ExoPlayer.Builder(context).build();
+                if (type == AdMediaType.VIDEO) {
 
-                new Handler(player.getApplicationLooper()).post(() -> {
-                    player.setMediaItem(MediaItem.fromUri(ad.getMediaUrl()));
-                    player.addListener(playerListener);
-                    player.prepare();
-                });
+                    player = new ExoPlayer.Builder(context).build();
+
+                    new Handler(player.getApplicationLooper()).post(() -> {
+                        player.setMediaItem(MediaItem.fromUri(ad.getMediaUrl()));
+                        player.addListener(playerListener);
+                        player.prepare();
+                    });
+                }
 
 
             } catch (AdRequestException e) {

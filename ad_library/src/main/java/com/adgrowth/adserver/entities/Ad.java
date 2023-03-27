@@ -10,10 +10,10 @@ import com.adgrowth.adserver.helpers.JSONHelper;
 import org.json.JSONObject;
 
 public class Ad {
-    public final static int ALREADY_LOADED = -1;
-    public final static int ALREADY_CONSUMED = -2;
-    public final static int NOT_READY = -3;
-    public final static int MEDIA_ERROR = -5;
+    public final static String ALREADY_LOADED = "already_loaded";
+    public final static String ALREADY_CONSUMED = "already_consumed";
+    public final static String NOT_READY = "not_ready";
+    public final static String MEDIA_ERROR = "media_error";
     private final String id;
     private final AdType type;
     private final String mediaUrl;

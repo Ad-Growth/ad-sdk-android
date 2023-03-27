@@ -9,8 +9,8 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 
-public class AdPlayerView extends StyledPlayerView {
-    public AdPlayerView(Context context, ExoPlayer player) {
+public class AdPlayer extends StyledPlayerView {
+    public AdPlayer(Context context, ExoPlayer player) {
         super(context);
         setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
         setUseController(false);
