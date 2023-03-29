@@ -1,9 +1,20 @@
 package com.adgrowth.adserver.constants;
 
 public enum AdDimensionType {
-    BANNER,
-    LARGE_BANNER,
-    MEDIUM_RECTANGLE,
-    FULL_BANNER,
-    LEADERBOARD
+    BANNER("BANNER"),
+    LARGE_BANNER("LARGE_BANNER"),
+    MEDIUM_RECTANGLE("MEDIUM_RECTANGLE"),
+    FULL_BANNER("FULL_BANNER"),
+    LEADERBOARD("LEADERBOARD");
+    private final String name;
+
+    AdDimensionType(String s) {
+        name = s;
+    }
+
+    public String toString() {
+        return this.name;
+    }
+
+
 }

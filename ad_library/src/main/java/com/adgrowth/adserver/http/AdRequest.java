@@ -97,7 +97,7 @@ public class AdRequest {
                 apiClient.post("/event", params);
             } catch (APIIOException e) {
                 // TODO: handle it and delivery a code?
-                e.printStackTrace();
+                // e.printStackTrace();
             }
 
         }).start();

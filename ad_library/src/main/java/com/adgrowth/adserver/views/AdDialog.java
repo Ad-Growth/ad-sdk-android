@@ -40,8 +40,9 @@ public class AdDialog extends Dialog {
     }
 
     public void setVideoProgress(int progress) {
-        this.progressBar.setVisibility(View.VISIBLE);
-        this.progressBar.setProgress(progress);
+        if (progressBar.getVisibility() != View.VISIBLE)
+            progressBar.setVisibility(View.VISIBLE);
+        progressBar.setProgress(progress);
     }
 
     public void showCloseButton() {

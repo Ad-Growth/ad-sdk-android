@@ -1,5 +1,7 @@
 package com.adgrowth.adserver.http;
 
+import android.util.Log;
+
 import com.adgrowth.adserver.AdServer;
 import com.adgrowth.adserver.exceptions.APIIOException;
 import com.adgrowth.adserver.helpers.QueryStringHelpers;
@@ -49,11 +51,10 @@ public class APIClient {
 
     public JSONObject post(String path, HashMap<String, String> params) throws APIIOException {
 
-        String query = QueryStringHelpers.encode(params);
-        String urlString = baseUrl + path + query;
+        String urlString = baseUrl + path;
 
         try {
-
+            Log.d("TAG", "post: params: " + params);
             HttpURLConnection connection = (HttpURLConnection) new URL(urlString).openConnection();
 
             connection.setRequestProperty("Content-Type", "application/json");
@@ -104,7 +105,7 @@ public class APIClient {
                     }
 
                     reader.close();
-                    
+
                     this.responseString = response.toString();
                 } else {
                     throw new APIIOException(this);

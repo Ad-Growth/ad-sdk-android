@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+
 import com.adgrowth.adserver.views.AdImage;
 
 import java.io.File;
@@ -50,7 +52,7 @@ public class ImageLoader {
 
     }
 
-    public void setListener(AdImage.Listener imageListener) {
+    public void setListener(@Nullable AdImage.Listener imageListener) {
         listener = imageListener;
     }
 

@@ -2,23 +2,17 @@ package com.adgrowth.adserver;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.LinearLayout;
 
-import com.adgrowth.adserver.constants.AdEventType;
 import com.adgrowth.adserver.constants.AdMediaType;
 import com.adgrowth.adserver.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
-import com.adgrowth.adserver.helpers.OnClickHelpers;
 import com.adgrowth.adserver.http.AdRequest;
 import com.adgrowth.adserver.views.AdImage;
 import com.adgrowth.adserver.views.AdPlayer;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
 
 public class InterstitialAd extends BaseFullScreenAd {
-
 
     private String unitId;
 
@@ -26,17 +20,6 @@ public class InterstitialAd extends BaseFullScreenAd {
 
         this.unitId = unitId;
         this.adRequest = adRequest;
-
-        this.onAdClickListener = view -> {
-
-            if (player != null) player.pause();
-
-            OnClickHelpers.openUrl(context, ad.getActionUrl());
-
-            if (listener != null) listener.onClicked();
-
-            adRequest.sendEvent(ad, AdEventType.CLICKED);
-        };
 
     }
 
@@ -56,34 +39,23 @@ public class InterstitialAd extends BaseFullScreenAd {
 
         this.context = context;
         AdMediaType type = ad.getMediaType();
-        context.getApplication().registerActivityLifecycleCallbacks(this);
 
         prepareDialog();
 
-        LinearLayout container = (LinearLayout) dialog.findViewById(R.id.content_container);
-        container.setOnClickListener(onAdClickListener);
-
-
-        if (type == AdMediaType.IMAGE) {
+        if (type == AdMediaType.IMAGE)
             container.addView(imageView);
-            dialog.show();
-            return;
-        }
 
+        if (type == AdMediaType.VIDEO)
+            container.addView(player);
 
-        new Handler(player.getApplicationLooper()).post(() -> {
-            playerView = new AdPlayer(context, player);
-            container.addView(playerView);
-        });
 
         dialog.show();
-        player.play();
     }
 
     @Override
     public void load(Activity context) {
         this.context = context;
-        
+
         if (ad != null) {
             listener.onFailedToLoad(new AdRequestException(AdRequestException.ALREADY_LOADED));
             return;
@@ -92,30 +64,23 @@ public class InterstitialAd extends BaseFullScreenAd {
         new Thread(() -> {
             try {
                 ad = adRequest.getAd(unitId);
-
+                Log.d("TAG", "load: ad"+ad);
                 AdMediaType type = ad.getMediaType();
 
                 if (type == AdMediaType.IMAGE) {
-                    imageView = new AdImage(context, ad.getMediaUrl());
+                    imageView = new AdImage(context, ad.getMediaUrl(), imageListener);
                     imageView.setOnClickListener(onAdClickListener);
-                    imageView.addListener(imageListener);
-                    imageView.prepare();
-                    return;
+
                 }
 
                 if (type == AdMediaType.VIDEO) {
-
-                    player = new ExoPlayer.Builder(context).build();
-
-                    new Handler(player.getApplicationLooper()).post(() -> {
-                        player.setMediaItem(MediaItem.fromUri(ad.getMediaUrl()));
-                        player.addListener(playerListener);
-                        player.prepare();
-                    });
+                    player = new AdPlayer(context, ad.getMediaUrl(), playerListener);
+                    player.setOnClickListener(onAdClickListener);
                 }
 
 
             } catch (AdRequestException e) {
+
                 listener.onFailedToLoad(e);
             }
 
