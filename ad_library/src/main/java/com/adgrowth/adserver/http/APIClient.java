@@ -54,7 +54,6 @@ public class APIClient {
         String urlString = baseUrl + path;
 
         try {
-            Log.d("TAG", "post: params: " + params);
             HttpURLConnection connection = (HttpURLConnection) new URL(urlString).openConnection();
 
             connection.setRequestProperty("Content-Type", "application/json");

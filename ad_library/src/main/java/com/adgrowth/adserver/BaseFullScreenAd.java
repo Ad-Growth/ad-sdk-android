@@ -4,7 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -30,15 +32,16 @@ import java.util.TimerTask;
 @SuppressLint("NewApi")
 abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
-    protected AdImage imageView;
+    protected AdImage adImage;
     protected InterstitialAdListener listener;
     protected AdRequest adRequest;
     protected Ad ad;
     protected Timer countdownTimer = new Timer();
     protected Activity context;
     protected AdDialog dialog;
-
-    protected boolean mediaIsReady = false;
+    private boolean videoIsReady = false;
+    private boolean imageIsReady = false;
+    protected boolean adIsReady = false;
 
     protected AdPlayer player;
     protected View.OnClickListener onAdClickListener = view -> {
@@ -54,9 +57,7 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
 
     public abstract void show(Activity context);
 
-
     public abstract void load(Activity context);
-
 
     protected void prepareDialog() {
         dialog = new AdDialog(this.context);
@@ -65,6 +66,16 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
         dialog.setOnCloseListener(onCloseListener);
         container = ((LinearLayout) dialog.findViewById(R.id.content_container));
         container.setOnClickListener(onAdClickListener);
+    }
+
+    private void presentPostAd() {
+        player.setVisibility(View.GONE);
+        player.release();
+        dialog.hideProgressBar();
+
+        container.addView(adImage);
+        container.removeView(player);
+        adImage.setVisibility(View.VISIBLE);
     }
 
     protected void startShowCloseButtonCountdown() {
@@ -96,29 +107,20 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
 
     protected void dismiss() {
 
-        context.runOnUiThread(() -> this.listener.onDismissed());
+        context.runOnUiThread(() -> listener.onDismissed());
         dialog.dismiss();
 //        TODO: may be used later
 //        adRequest.sendEvent(ad, AdEventType.DISMISSED);
     }
 
-    private void presentPostAd() {
-        player.setVisibility(View.GONE);
-        player.release();
-        dialog.hideProgressBar();
-        imageView = new AdImage(this.context, ad.getPostMediaUrl(), null);
-        imageView.setVisibility(View.VISIBLE);
-        container.addView(imageView);
-        container.removeView(player);
-    }
 
     @Override
     public void onShow(DialogInterface dialogInterface) {
         context.runOnUiThread(() -> this.listener.onImpression());
         context.getApplication().registerActivityLifecycleCallbacks(this);
+        ((Activity) context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         Objects.requireNonNull(dialog.getWindow()).addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         startShowCloseButtonCountdown();
-
         ad.setConsumed(true);
         adRequest.sendEvent(ad, AdEventType.PRINTED);
     }
@@ -127,6 +129,7 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
     public void onDismiss(DialogInterface dialogInterface) {
         Objects.requireNonNull(dialog.getWindow()).clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         context.getApplication().unregisterActivityLifecycleCallbacks(this);
+        ((Activity) context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         dismiss();
     }
 
@@ -137,26 +140,34 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
         @Override
         public void onLoad() {
             super.onLoad();
-            mediaIsReady = true;
-            context.runOnUiThread(() -> listener.onLoad());
+            imageIsReady = true;
+            if (ad.getMediaType() == AdMediaType.VIDEO) {
+                if (videoIsReady) adIsReady = true;
+            } else {
+                adIsReady = true;
+            }
+
+            if (adIsReady)
+                context.runOnUiThread(() -> listener.onLoad());
 
         }
 
         @Override
-        public void onLoadFailed(int code) {
-            super.onLoadFailed(code);
-
-            if (code == 1) listener.onFailedToShow(Ad.MEDIA_ERROR);
-            else listener.onFailedToLoad(new AdRequestException(AdRequestException.NETWORK_ERROR));
+        public void onLoadFailed() {
+            super.onLoadFailed();
+            listener.onFailedToLoad(new AdRequestException(AdRequestException.NETWORK_ERROR));
 
         }
     };
 
+
     protected final AdPlayer.Listener playerListener = new AdPlayer.Listener() {
         @Override
         public void onReady() {
-            mediaIsReady = true;
-            listener.onLoad();
+            if (imageIsReady) adIsReady = true;
+
+            if (adIsReady)
+                listener.onLoad();
         }
 
         @Override
@@ -171,8 +182,8 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
 
 
         @Override
-        public void onProgress(int progress) {
-            dialog.setVideoProgress(progress);
+        public void onVideoProgressChanged(double currentPosition, double duration) {
+            dialog.setVideoProgress((int) ((currentPosition / duration) * 100));
         }
     };
 

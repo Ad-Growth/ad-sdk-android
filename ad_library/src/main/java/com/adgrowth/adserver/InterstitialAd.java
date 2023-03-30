@@ -3,7 +3,8 @@ package com.adgrowth.adserver;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.util.Log;
-import android.widget.LinearLayout;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import com.adgrowth.adserver.constants.AdMediaType;
 import com.adgrowth.adserver.entities.Ad;
@@ -28,10 +29,11 @@ public class InterstitialAd extends BaseFullScreenAd {
     @Override
     public void show(Activity context) {
 
-        if (ad == null || !mediaIsReady) {
+        if (ad == null || !adIsReady) {
             listener.onFailedToShow(Ad.NOT_READY);
             return;
         }
+
         if (ad.isConsumed()) {
             listener.onFailedToShow(Ad.ALREADY_CONSUMED);
             return;
@@ -43,7 +45,7 @@ public class InterstitialAd extends BaseFullScreenAd {
         prepareDialog();
 
         if (type == AdMediaType.IMAGE)
-            container.addView(imageView);
+            container.addView(adImage);
 
         if (type == AdMediaType.VIDEO)
             container.addView(player);
@@ -64,14 +66,8 @@ public class InterstitialAd extends BaseFullScreenAd {
         new Thread(() -> {
             try {
                 ad = adRequest.getAd(unitId);
-                Log.d("TAG", "load: ad"+ad);
                 AdMediaType type = ad.getMediaType();
 
-                if (type == AdMediaType.IMAGE) {
-                    imageView = new AdImage(context, ad.getMediaUrl(), imageListener);
-                    imageView.setOnClickListener(onAdClickListener);
-
-                }
 
                 if (type == AdMediaType.VIDEO) {
                     player = new AdPlayer(context, ad.getMediaUrl(), playerListener);
@@ -79,12 +75,24 @@ public class InterstitialAd extends BaseFullScreenAd {
                 }
 
 
+                String imageUrl = ad.getPostMediaUrl();
+
+                if (type == AdMediaType.IMAGE) {
+                    imageUrl = ad.getMediaUrl();
+                }
+
+                adImage = new AdImage(context, imageUrl, imageListener);
+                adImage.setOnClickListener(onAdClickListener);
+
+
             } catch (AdRequestException e) {
 
                 listener.onFailedToLoad(e);
             }
 
-        }).start();
+        }).
+
+                start();
 
     }
 

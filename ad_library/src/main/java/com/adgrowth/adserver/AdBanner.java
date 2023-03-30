@@ -16,10 +16,10 @@ import com.adgrowth.adserver.constants.AdBannerSize;
 import com.adgrowth.adserver.constants.AdDimensionType;
 import com.adgrowth.adserver.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
-import com.adgrowth.adserver.helpers.ImageLoader;
 import com.adgrowth.adserver.helpers.ScreenHelpers;
 import com.adgrowth.adserver.http.AdRequest;
 import com.adgrowth.adserver.interfaces.BaseAdListener;
+import com.bumptech.glide.Glide;
 
 
 public class AdBanner extends LinearLayout {
@@ -128,7 +128,7 @@ public class AdBanner extends LinearLayout {
     }
 
     void presentAd() {
-        new ImageLoader(this.getContext()).loadImage(ad.getMediaUrl(), image);
+        Glide.with(getContext()).load(ad.getMediaUrl()).into(image);
         assert callback != null;
         callback.onImpression();
     }
