@@ -1,6 +1,6 @@
-package com.adgrowth.adserver.entities;
+package com.adgrowth.internal.entities;
 
-import com.adgrowth.adserver.helpers.JSONHelper;
+import com.adgrowth.internal.helpers.JSONHelper;
 
 import org.json.JSONObject;
 

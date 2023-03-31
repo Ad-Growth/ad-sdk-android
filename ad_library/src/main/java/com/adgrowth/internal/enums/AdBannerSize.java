@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.constants;
+package com.adgrowth.internal.enums;
 
 public class AdBannerSize{
     public static final double BANNER = 6.4f;

@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.views;
+package com.adgrowth.internal.views;
 
 import android.app.Dialog;
 import android.content.Context;

@@ -1,19 +1,18 @@
-package com.adgrowth.adserver.http;
+package com.adgrowth.adserver;
 
 import android.app.Activity;
 import android.location.Location;
-import android.util.Log;
 
-import com.adgrowth.adserver.AdServer;
-import com.adgrowth.adserver.constants.AdEventType;
-
-import com.adgrowth.adserver.entities.Ad;
-import com.adgrowth.adserver.entities.ClientAddress;
 import com.adgrowth.adserver.entities.ClientProfile;
+import com.adgrowth.internal.enums.AdEventType;
+
+import com.adgrowth.internal.entities.Ad;
+import com.adgrowth.internal.entities.ClientAddress;
 import com.adgrowth.adserver.exceptions.APIIOException;
 import com.adgrowth.adserver.exceptions.AdRequestException;
-import com.adgrowth.adserver.helpers.ScreenHelpers;
-import com.adgrowth.adserver.helpers.SystemInfoHelpers;
+import com.adgrowth.internal.helpers.ScreenHelpers;
+import com.adgrowth.internal.helpers.SystemInfoHelpers;
+import com.adgrowth.internal.http.APIClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;

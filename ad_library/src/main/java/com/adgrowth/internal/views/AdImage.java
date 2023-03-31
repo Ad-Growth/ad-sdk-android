@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.views;
+package com.adgrowth.internal.views;
 
 import static com.bumptech.glide.load.resource.gif.GifDrawable.LOOP_FOREVER;
 

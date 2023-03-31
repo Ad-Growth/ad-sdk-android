@@ -6,7 +6,6 @@ import android.app.Application;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -14,16 +13,14 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.adgrowth.adserver.constants.AdEventType;
-import com.adgrowth.adserver.constants.AdMediaType;
-import com.adgrowth.adserver.entities.Ad;
+import com.adgrowth.internal.enums.AdEventType;
+import com.adgrowth.internal.enums.AdMediaType;
+import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
-import com.adgrowth.adserver.helpers.OnClickHelpers;
-import com.adgrowth.adserver.http.AdRequest;
-import com.adgrowth.adserver.interfaces.InterstitialAdListener;
-import com.adgrowth.adserver.views.AdDialog;
-import com.adgrowth.adserver.views.AdImage;
-import com.adgrowth.adserver.views.AdPlayer;
+import com.adgrowth.internal.helpers.OnClickHelpers;
+import com.adgrowth.internal.views.AdDialog;
+import com.adgrowth.internal.views.AdImage;
+import com.adgrowth.internal.views.AdPlayer;
 
 import java.util.Objects;
 import java.util.Timer;
@@ -33,7 +30,7 @@ import java.util.TimerTask;
 abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
     protected AdImage adImage;
-    protected InterstitialAdListener listener;
+    protected InterstitialAd.Listener listener;
     protected AdRequest adRequest;
     protected Ad ad;
     protected Timer countdownTimer = new Timer();
@@ -101,7 +98,7 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
         countdownTimer.scheduleAtFixedRate(task, 1000, 1000);
     }
 
-    public void setListener(InterstitialAdListener listener) {
+    public void setListener(InterstitialAd.Listener listener) {
         this.listener = listener;
     }
 

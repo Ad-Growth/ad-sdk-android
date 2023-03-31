@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.constants;
+package com.adgrowth.internal.enums;
 
 public enum AdType {
     INTERSTITIAL("INTERSTITIAL"),

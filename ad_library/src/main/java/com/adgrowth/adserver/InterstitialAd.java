@@ -2,16 +2,13 @@ package com.adgrowth.adserver;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 
-import com.adgrowth.adserver.constants.AdMediaType;
-import com.adgrowth.adserver.entities.Ad;
+import com.adgrowth.internal.enums.AdMediaType;
+import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
-import com.adgrowth.adserver.http.AdRequest;
-import com.adgrowth.adserver.views.AdImage;
-import com.adgrowth.adserver.views.AdPlayer;
+import com.adgrowth.internal.interfaces.BaseAdListener;
+import com.adgrowth.internal.views.AdImage;
+import com.adgrowth.internal.views.AdPlayer;
 
 public class InterstitialAd extends BaseFullScreenAd {
 
@@ -97,4 +94,9 @@ public class InterstitialAd extends BaseFullScreenAd {
     }
 
 
+    public abstract static class Listener extends BaseAdListener {
+        public void onDismissed() {
+        }
+
+    }
 }

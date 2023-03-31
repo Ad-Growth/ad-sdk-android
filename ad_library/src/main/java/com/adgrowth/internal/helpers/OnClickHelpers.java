@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.helpers;
+package com.adgrowth.internal.helpers;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;

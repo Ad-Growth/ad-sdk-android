@@ -1,10 +1,8 @@
-package com.adgrowth.adserver.http;
-
-import android.util.Log;
+package com.adgrowth.internal.http;
 
 import com.adgrowth.adserver.AdServer;
 import com.adgrowth.adserver.exceptions.APIIOException;
-import com.adgrowth.adserver.helpers.QueryStringHelpers;
+import com.adgrowth.internal.helpers.QueryStringHelpers;
 
 import org.json.JSONException;
 import org.json.JSONObject;

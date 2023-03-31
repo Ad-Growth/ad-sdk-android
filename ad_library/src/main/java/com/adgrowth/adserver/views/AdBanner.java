@@ -1,4 +1,4 @@
-package com.adgrowth.adserver;
+package com.adgrowth.adserver.views;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -12,13 +12,13 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
-import com.adgrowth.adserver.constants.AdBannerSize;
-import com.adgrowth.adserver.constants.AdDimensionType;
-import com.adgrowth.adserver.entities.Ad;
+import com.adgrowth.adserver.AdRequest;
+import com.adgrowth.internal.enums.AdBannerSize;
+import com.adgrowth.internal.enums.AdDimensionType;
+import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.adserver.exceptions.AdRequestException;
-import com.adgrowth.adserver.helpers.ScreenHelpers;
-import com.adgrowth.adserver.http.AdRequest;
-import com.adgrowth.adserver.interfaces.BaseAdListener;
+import com.adgrowth.internal.helpers.ScreenHelpers;
+import com.adgrowth.internal.interfaces.BaseAdListener;
 import com.bumptech.glide.Glide;
 
 

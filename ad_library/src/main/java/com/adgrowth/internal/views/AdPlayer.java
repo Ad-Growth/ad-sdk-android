@@ -1,10 +1,9 @@
-package com.adgrowth.adserver.views;
+package com.adgrowth.internal.views;
 
 import android.app.Activity;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
-import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.ViewGroup;

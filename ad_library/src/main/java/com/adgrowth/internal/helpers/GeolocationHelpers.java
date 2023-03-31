@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.helpers;
+package com.adgrowth.internal.helpers;
 
 import android.Manifest;
 import android.content.Context;

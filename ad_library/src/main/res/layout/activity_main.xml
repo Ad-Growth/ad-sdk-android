@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-<!--        <com.adgrowth.adserver.AdBanner-->
+<!--        <com.adgrowth.adserver.views.AdBanner-->
 <!--            android:id="@+id/my_layout"-->
 
 <!--            android:layout_width="match_parent"-->

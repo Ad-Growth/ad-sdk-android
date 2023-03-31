@@ -1,4 +1,4 @@
-package com.adgrowth.adserver.interfaces;
+package com.adgrowth.internal.interfaces;
 
 import com.adgrowth.adserver.exceptions.AdRequestException;
 

@@ -1,16 +1,15 @@
-package com.adgrowth.adserver.tasks;
+package com.adgrowth.internal.tasks;
 
 import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.adgrowth.adserver.entities.ClientAddress;
+import com.adgrowth.internal.entities.ClientAddress;
 import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.exceptions.SDKInitException;
-import com.adgrowth.adserver.http.AdRequest;
+import com.adgrowth.adserver.AdRequest;
 
 
 @SuppressLint("NewApi")

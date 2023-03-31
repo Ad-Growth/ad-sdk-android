@@ -1,7 +1,6 @@
-package com.adgrowth.adserver.helpers;
+package com.adgrowth.internal.helpers;
 
 import android.net.Uri;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;

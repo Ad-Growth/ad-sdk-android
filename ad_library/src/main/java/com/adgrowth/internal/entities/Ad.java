@@ -1,11 +1,11 @@
-package com.adgrowth.adserver.entities;
+package com.adgrowth.internal.entities;
 
 
 import androidx.annotation.NonNull;
 
-import com.adgrowth.adserver.constants.AdMediaType;
-import com.adgrowth.adserver.constants.AdType;
-import com.adgrowth.adserver.helpers.JSONHelper;
+import com.adgrowth.internal.enums.AdMediaType;
+import com.adgrowth.internal.enums.AdType;
+import com.adgrowth.internal.helpers.JSONHelper;
 
 import org.json.JSONObject;
 

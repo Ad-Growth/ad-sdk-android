@@ -9,12 +9,11 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
-import com.adgrowth.adserver.entities.ClientAddress;
 import com.adgrowth.adserver.entities.ClientProfile;
 import com.adgrowth.adserver.exceptions.SDKInitException;
-import com.adgrowth.adserver.helpers.GeolocationHelpers;
-import com.adgrowth.adserver.interfaces.OnInitSDKListener;
-import com.adgrowth.adserver.tasks.StartSDK;
+import com.adgrowth.internal.entities.ClientAddress;
+import com.adgrowth.internal.helpers.GeolocationHelpers;
+import com.adgrowth.internal.tasks.StartSDK;
 
 public class AdServer {
     private static final int MIN_TIME_MS = 100;
@@ -23,14 +22,14 @@ public class AdServer {
     private static ClientAddress clientAddress;
     private static ClientProfile clientProfile;
     private static Context context;
-    private static OnInitSDKListener callback;
+    private static Listener callback;
     private static Location location;
 
     public static String getClientKey() {
         return clientKey;
     }
 
-    public static void initialize(Context context, String key, OnInitSDKListener callback) {
+    public static void initialize(Context context, String key, Listener callback) {
         AdServer.callback = callback;
         AdServer.context = context;
         AdServer.clientProfile = new ClientProfile();
@@ -41,7 +40,7 @@ public class AdServer {
         checkLocation();
     }
 
-    public static void initialize(Context context, String key, ClientProfile profile, OnInitSDKListener callback) {
+    public static void initialize(Context context, String key, ClientProfile profile, Listener callback) {
         AdServer.clientProfile = profile;
         AdServer.context = context;
         AdServer.callback = callback;
@@ -121,5 +120,8 @@ public class AdServer {
     }
 
 
-
+    public interface Listener {
+         void onInit();
+        void onFailed(SDKInitException e);
+    }
 }

@@ -1,18 +1,19 @@
 plugins {
     id 'com.android.library'
     id 'maven-publish'
+    id 'base'
 }
 
 android {
     namespace 'com.adgrowth.adserver'
-    compileSdk 24
+    compileSdk 28
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         minSdk 24
         //noinspection ExpiredTargetSdkVersion
-        targetSdk 24
+        targetSdk 28
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -20,8 +21,9 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'library.pro'
+            minifyEnabled true
+
+            proguardFiles  getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -29,6 +31,28 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+}
+
+def getGitTagVersion = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    def commitId = stdout.toString().replace("\n", "").replace("\r", "").trim()
+    stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'tag', '--points-at', commitId
+        standardOutput = stdout
+    }
+    def tagName = stdout.toString().replace("\n", "").replace("\r", "").trim()
+    def versionName = 'git-' + commitId
+    if (tagName != null && "" != tagName) {
+        versionName = tagName
+    }
+
+    println "version=$versionName"
+    return versionName
 }
 
 dependencies {
@@ -42,9 +66,9 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = 'dev.dhoncrisley'
-                artifactId = 'ad_sdk'
-                version = "0.0.1"
+                groupId = 'com.adgrowth'
+                artifactId = 'adserver'
+                version = getGitTagVersion()
             }
         }
     }

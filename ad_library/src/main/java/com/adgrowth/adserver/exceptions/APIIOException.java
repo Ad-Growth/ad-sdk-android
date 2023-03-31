@@ -1,7 +1,7 @@
 package com.adgrowth.adserver.exceptions;
 
 
-import com.adgrowth.adserver.http.APIClient;
+import com.adgrowth.internal.http.APIClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
