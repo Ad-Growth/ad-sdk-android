@@ -112,9 +112,7 @@ public class MainActivity extends AppCompatActivity implements AdServer.Listener
         // instantiate a AdRequest class
         AdRequest adRequest = new AdRequest(this);
 
-        Button loadButton = this.findViewById(R.id.load_interstitial_btn);
-        Button showButton = this.findViewById(R.id.show_interstitial_btn);
-                interstitialAd = new InterstitialAd(unit_id, adRequest);
+        interstitialAd = new InterstitialAd(unit_id, adRequest);
 
         interstitialAd.setListener(new InterstitialAd.Listener() {
 
