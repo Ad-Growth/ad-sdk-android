@@ -23,7 +23,7 @@ android {
         release {
             minifyEnabled true
 
-            proguardFiles  getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -31,28 +31,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-}
-
-def getGitTagVersion = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = stdout
-    }
-    def commitId = stdout.toString().replace("\n", "").replace("\r", "").trim()
-    stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'tag', '--points-at', commitId
-        standardOutput = stdout
-    }
-    def tagName = stdout.toString().replace("\n", "").replace("\r", "").trim()
-    def versionName = 'git-' + commitId
-    if (tagName != null && "" != tagName) {
-        versionName = tagName
-    }
-
-    println "version=$versionName"
-    return versionName
 }
 
 dependencies {
@@ -68,7 +46,7 @@ afterEvaluate {
 
                 groupId = 'com.adgrowth'
                 artifactId = 'adserver'
-                version = getGitTagVersion()
+                version = "0.0.1"
             }
         }
     }
