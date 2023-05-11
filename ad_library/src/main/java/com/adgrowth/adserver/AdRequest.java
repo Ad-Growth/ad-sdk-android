@@ -2,16 +2,14 @@ package com.adgrowth.adserver;
 
 import android.app.Activity;
 
-import com.adgrowth.adserver.entities.ClientProfile;
-import com.adgrowth.internal.enums.AdEventType;
-
-import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.adserver.entities.ClientAddress;
+import com.adgrowth.adserver.entities.ClientProfile;
 import com.adgrowth.adserver.exceptions.APIIOException;
 import com.adgrowth.adserver.exceptions.AdRequestException;
+import com.adgrowth.internal.entities.Ad;
+import com.adgrowth.internal.enums.AdEventType;
 import com.adgrowth.internal.helpers.IOErrorHandler;
 import com.adgrowth.internal.helpers.ScreenHelpers;
-import com.adgrowth.internal.helpers.SystemInfoHelpers;
 import com.adgrowth.internal.http.APIClient;
 
 import org.json.JSONException;
@@ -60,23 +58,17 @@ public class AdRequest {
 //        HashMap systemInfo = SystemInfoHelpers.getSystemInfo(context);
 //        params.put("system_info", systemInfo);
 
-
         try {
             JSONObject response = apiClient.get("/adserver/api/adverts/search", params);
-
             return new Ad(response.getJSONObject("advert"));
-
         } catch (APIIOException | JSONException e) {
             throw IOErrorHandler.handle(e);
         }
-
     }
 
     public void sendEvent(Ad ad, AdEventType eventType) {
         new Thread(() -> {
-
             try {
-
                 HashMap params = new HashMap<String, String>();
                 params.put("id", ad.getId());
                 params.put("event_type", eventType);
@@ -86,10 +78,7 @@ public class AdRequest {
                 // TODO: handle it and delivery a code?
                 // e.printStackTrace();
             }
-
         }).start();
-
-
     }
 
 }

@@ -1,6 +1,5 @@
 package com.adgrowth.adserver;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 
 import com.adgrowth.internal.enums.AdMediaType;
@@ -21,11 +20,6 @@ public class InterstitialAd extends BaseFullScreenAd {
 
     }
 
-    public String getUnitId() {
-        return unitId;
-    }
-
-    @SuppressLint("NewApi")
     @Override
     public void show(Activity context) {
 

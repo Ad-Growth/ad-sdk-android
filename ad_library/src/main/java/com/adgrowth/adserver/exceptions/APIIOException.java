@@ -6,11 +6,9 @@ import com.adgrowth.internal.http.APIClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 
 public class APIIOException extends Exception {
-    private String message = "";
+    private String message;
 
     private JSONObject body;
     private int statusCode;

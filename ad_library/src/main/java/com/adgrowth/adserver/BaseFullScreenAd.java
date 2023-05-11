@@ -1,6 +1,5 @@
 package com.adgrowth.adserver;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.DialogInterface;
@@ -13,10 +12,10 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.adgrowth.adserver.exceptions.AdRequestException;
+import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.internal.enums.AdEventType;
 import com.adgrowth.internal.enums.AdMediaType;
-import com.adgrowth.internal.entities.Ad;
-import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.internal.helpers.OnClickHelpers;
 import com.adgrowth.internal.views.AdDialog;
 import com.adgrowth.internal.views.AdImage;
@@ -26,7 +25,6 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
-@SuppressLint("NewApi")
 abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
     protected AdImage adImage;
@@ -115,9 +113,11 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
     public void onShow(DialogInterface dialogInterface) {
         context.runOnUiThread(() -> this.listener.onImpression());
         context.getApplication().registerActivityLifecycleCallbacks(this);
+
         ((Activity) context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         Objects.requireNonNull(dialog.getWindow()).addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         startShowCloseButtonCountdown();
+
         ad.setConsumed(true);
         adRequest.sendEvent(ad, AdEventType.PRINTED);
     }
@@ -140,20 +140,15 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
             imageIsReady = true;
             if (ad.getMediaType() == AdMediaType.VIDEO) {
                 if (videoIsReady) adIsReady = true;
-            } else {
-                adIsReady = true;
-            }
+            } else adIsReady = true;
 
             if (adIsReady)
                 context.runOnUiThread(() -> listener.onLoad());
-
         }
 
         @Override
         public void onLoadFailed() {
-
             listener.onFailedToLoad(new AdRequestException(AdRequestException.NETWORK_ERROR));
-
         }
     };
 
@@ -163,8 +158,7 @@ abstract class BaseFullScreenAd implements Application.ActivityLifecycleCallback
         public void onReady() {
             if (imageIsReady) adIsReady = true;
 
-            if (adIsReady)
-                listener.onLoad();
+            if (adIsReady) listener.onLoad();
         }
 
         @Override

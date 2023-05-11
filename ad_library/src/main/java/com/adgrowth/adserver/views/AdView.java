@@ -3,8 +3,6 @@ package com.adgrowth.adserver.views;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
-import android.text.Layout;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +13,10 @@ import androidx.annotation.Nullable;
 
 import com.adgrowth.adserver.AdRequest;
 import com.adgrowth.adserver.R;
+import com.adgrowth.adserver.exceptions.AdRequestException;
+import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.internal.enums.AdEventType;
 import com.adgrowth.internal.enums.AdSizeType;
-import com.adgrowth.internal.entities.Ad;
-import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.internal.helpers.OnClickHelpers;
 import com.adgrowth.internal.helpers.ScreenHelpers;
 import com.adgrowth.internal.interfaces.BaseAdListener;
@@ -42,6 +40,7 @@ public class AdView extends ViewGroup implements AdImage.Listener {
             context.runOnUiThread(() -> Toast.makeText(context, "AD NOT LOADED YET", Toast.LENGTH_SHORT).show());
             return;
         }
+
         OnClickHelpers.openUrl(context, ad.getActionUrl());
 
         if (listener != null) context.runOnUiThread(() -> listener.onClicked());
@@ -51,12 +50,13 @@ public class AdView extends ViewGroup implements AdImage.Listener {
 
 
     public AdView(Context context, String unitId, AdSizeType size) {
-
         super(context);
+
         setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, ScreenHelpers.dpToPx(72, context)));
         this.context = (Activity) context;
         this.unitId = unitId;
         this.size = size;
+
         init();
     }
 
@@ -76,7 +76,6 @@ public class AdView extends ViewGroup implements AdImage.Listener {
         return unitId;
     }
 
-   
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {

@@ -1,7 +1,5 @@
 package com.adgrowth.adserver.entities;
 
-import android.util.Log;
-
 import com.adgrowth.internal.helpers.JSONHelper;
 
 import org.json.JSONObject;

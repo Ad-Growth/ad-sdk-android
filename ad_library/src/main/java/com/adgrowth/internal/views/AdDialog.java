@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 
 import com.adgrowth.adserver.R;
 
+import java.util.Objects;
+
 public class AdDialog extends Dialog {
 
     private final ProgressBar progressBar;
@@ -26,7 +28,7 @@ public class AdDialog extends Dialog {
         setContentView(R.layout.activity_fit_content);
         setCancelable(false);
 
-        getWindow().setGravity(Gravity.CENTER);
+        Objects.requireNonNull(getWindow()).setGravity(Gravity.CENTER);
         getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         closeBtn = (ImageView) findViewById(R.id.close_btn);

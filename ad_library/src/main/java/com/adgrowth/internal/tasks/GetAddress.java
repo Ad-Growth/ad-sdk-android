@@ -27,7 +27,6 @@ public class GetAddress extends AsyncTask<String, String, ClientAddress> {
     private final OnStartCallback callback;
     private final APIClient apiClient;
     private final ClientProfile profile;
-
     private SDKInitException exception;
 
     public GetAddress(OnStartCallback callback) {
@@ -57,7 +56,7 @@ public class GetAddress extends AsyncTask<String, String, ClientAddress> {
     public ClientAddress getAddress(@Nullable Double latitude, @Nullable Double longitude) throws AdRequestException {
 
 
-        HashMap params = new HashMap<String, String>();
+        HashMap<String, Object> params = new HashMap<>();
 
         if (latitude != 0.0 && longitude != 0.0) {
             params.put("latitude", latitude);

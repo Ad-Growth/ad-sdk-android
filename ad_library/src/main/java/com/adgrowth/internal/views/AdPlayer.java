@@ -59,11 +59,11 @@ public class AdPlayer extends TextureView
             @Override
             public void run() {
                 if (listener != null) ((Activity) getContext()).runOnUiThread(() -> {
-                    try{
+                    try {
 
-                    listener.onVideoProgressChanged(
-                            (double) (mediaPlayer.getCurrentPosition() / 1000),
-                            (double) (getAdDuration() / 1000));
+                        listener.onVideoProgressChanged(
+                                (double) (mediaPlayer.getCurrentPosition() / 1000),
+                                (double) (getAdDuration() / 1000));
                     } catch (Exception ignored) {
                     }
                 });

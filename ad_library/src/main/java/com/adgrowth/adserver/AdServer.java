@@ -1,7 +1,5 @@
 package com.adgrowth.adserver;
 
-import android.annotation.SuppressLint;
-
 import com.adgrowth.adserver.entities.ClientAddress;
 import com.adgrowth.adserver.entities.ClientProfile;
 import com.adgrowth.adserver.exceptions.SDKInitException;
@@ -11,13 +9,9 @@ public class AdServer {
 
     private static String clientKey;
     private static ClientProfile clientProfile = new ClientProfile();
-
     private static Listener callback;
     private static Boolean initialized = false;
 
-    public static String getClientKey() {
-        return clientKey;
-    }
 
     public static void initialize(String key, Listener callback) {
         AdServer.callback = callback;
@@ -35,7 +29,6 @@ public class AdServer {
             return;
         }
         AdServer.clientProfile = profile;
-
         AdServer.callback = callback;
 
         if (key.equals(clientKey)) {
@@ -54,14 +47,11 @@ public class AdServer {
 
     public static void finish() {
         AdServer.clientKey = null;
-        AdServer.clientProfile = null;
-
-
+        AdServer.clientProfile = new ClientProfile();
         AdServer.initialized = false;
     }
 
 
-    @SuppressLint("NewApi")
     private static void startSDK() {
         new GetAddress(new GetAddress.OnStartCallback() {
             @Override
@@ -69,6 +59,7 @@ public class AdServer {
                 AdServer.clientProfile.setClientAddress(l);
                 AdServer.callback.onInit();
             }
+
             @Override
             public void onFailed(SDKInitException e) {
                 AdServer.callback.onFailed(e);
@@ -79,6 +70,10 @@ public class AdServer {
 
     public static void setUserProfile(ClientProfile profile) {
         AdServer.clientProfile = profile;
+    }
+
+    public static String getClientKey() {
+        return clientKey;
     }
 
     public static ClientProfile getUserProfile() {
