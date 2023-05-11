@@ -147,7 +147,3 @@ public class MainActivity extends AppCompatActivity implements AdServer.Listener
 ## Dependencies
 
 This SDK use [Glide](https://github.com/bumptech/glide) to load images and gifs.
-
-## License
-
-Apache 2.0
