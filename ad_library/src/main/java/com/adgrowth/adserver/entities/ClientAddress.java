@@ -1,24 +1,24 @@
-package com.adgrowth.internal.entities;
+package com.adgrowth.adserver.entities;
+
+import android.util.Log;
 
 import com.adgrowth.internal.helpers.JSONHelper;
 
 import org.json.JSONObject;
 
 public class ClientAddress {
-    private final String neighborhood;
-    private final String formattedAddress;
+
     private String city;
     private String state;
     private String country;
-    private double latitude;
-    private double longitude;
+    private double latitude = 0.0;
+    private double longitude = 0.0;
 
     public ClientAddress(JSONObject json) {
-        this.neighborhood = JSONHelper.safeGetString(json, "neighborhood");
+
         this.city = JSONHelper.safeGetString(json, "city");
         this.state = JSONHelper.safeGetString(json, "state");
         this.country = JSONHelper.safeGetString(json, "country");
-        this.formattedAddress = JSONHelper.safeGetString(json, "formatted_address");
         this.latitude = JSONHelper.safeGetDouble(json, "latitude");
         this.longitude = JSONHelper.safeGetDouble(json, "longitude");
 
@@ -45,12 +45,24 @@ public class ClientAddress {
         return longitude;
     }
 
-
-    public String getFormattedAddress() {
-        return formattedAddress;
+    public void setCity(String city) {
+        this.city = city;
     }
 
-    public String getNeighborhood() {
-        return neighborhood;
+    public void setState(String state) {
+        this.state = state;
     }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
 }

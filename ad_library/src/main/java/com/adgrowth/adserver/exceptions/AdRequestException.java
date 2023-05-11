@@ -3,6 +3,7 @@ package com.adgrowth.adserver.exceptions;
 public class AdRequestException extends Exception {
     public final static String PLAYBACK_ERROR = "playback_error";
     public final static String NETWORK_ERROR = "network_error";
+    public final static String UNKNOWN_ERROR = "unknown_error";
     public final static String INTERNAL_ERROR = "internal_error";
     public final static String INVALID_CLIENT_KEY = "invalid_client_key";
     public final static String INVALID_UNIT_ID = "invalid_unit_id";

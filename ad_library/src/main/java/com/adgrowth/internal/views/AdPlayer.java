@@ -21,7 +21,6 @@ public class AdPlayer extends TextureView
 
     MediaPlayer mediaPlayer;
     private int currentPosition = 0;
-    private boolean isPaused;
     private Listener listener;
     private Timer timer;
     private boolean released = false;
@@ -121,7 +120,7 @@ public class AdPlayer extends TextureView
         mediaPlayer.seekTo(currentPosition);
         trackProgress();
         mediaPlayer.start();
-        isPaused = false;
+
         if (listener != null) listener.onPlay();
     }
 
@@ -129,7 +128,7 @@ public class AdPlayer extends TextureView
         if (released || mediaPlayer == null) return;
         try {
             stopTrackingProgress();
-            isPaused = true;
+
             if (listener != null) listener.onPause();
 
             currentPosition = mediaPlayer.getCurrentPosition();

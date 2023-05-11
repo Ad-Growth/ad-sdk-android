@@ -20,8 +20,7 @@ import java.util.HashMap;
 
 
 public class APIClient {
-    private String baseUrl = "http://10.0.1.20:9000";
-    //    private String baseUrl = "https://us-east1-ad-server-381913.cloudfunctions.net/ms-adserver-hml";
+    private String baseUrl = "https://apiad-hml.adgrowth.com";
     private String client_key;
 
     public APIClient() {
