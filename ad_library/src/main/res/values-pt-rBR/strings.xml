@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="remaining_seconds">
+        <item quantity="one">%d segundo restante</item>
+        <item quantity="other">%d segundos restantes</item>
+    </plurals>
+    <string name="prize_received">Prêmio recebido!</string>
+    <string name="tap_to_close">Toque para fechar</string>
+    <string name="loading">Carregando…</string>
+</resources>

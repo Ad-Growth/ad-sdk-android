@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AdView">
+        <attr name="unit_id" format="string" />
+        <attr name="size" format="enum">
+            <enum name="banner" value="0" />
+            <enum name="large_banner" value="1" />
+            <enum name="medium_rectangle" value="2" />
+            <enum name="full_banner" value="3" />
+            <enum name="leaderboard" value="4" />
+        </attr>
+        <attr name="orientation" format="enum">
+            <enum name="landscape" value="0" />
+            <enum name="portrait" value="1" />
+        </attr>
+    </declare-styleable>
+</resources>
