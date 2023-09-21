@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.adgrowth.internal.helpers.FullScreenEventManager;
 import com.adgrowth.internal.http.AdRequest;
 import com.adgrowth.adserver.R;
 import com.adgrowth.adserver.exceptions.AdRequestException;
@@ -27,12 +28,7 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implements
-        Application.ActivityLifecycleCallbacks,
-        DialogInterface.OnShowListener,
-        DialogInterface.OnDismissListener,
-        AdPlayer.Listener,
-        AdImage.Listener {
+public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener, AdPlayer.Listener, AdImage.Listener {
     private static final int DEFAULT_AD_DURATION = 30;
     protected static final int TIME_TO_CLOSE = 5;
     protected String mUnitId;
@@ -121,6 +117,11 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
             return;
         }
 
+        if (!FullScreenEventManager.getShowPermission()) {
+            mListener.onFailedToShow(Ad.ALREADY_SHOWING_FULL_SCREEN_AD);
+            return;
+        }
+
         this.mContext = context;
         AdMediaType type = mAd.getMediaType();
 
@@ -198,11 +199,12 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
 
         (mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         Objects.requireNonNull(mDialog.getWindow()).addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        mPlayer.play();
         startAdDisplayTimer();
 
 
         mAd.setConsumed(true);
-
+        FullScreenEventManager.notifyFullScreenShown(hashCode());
         mAdRequest.sendImpression(mContext, mAd);
     }
 
@@ -212,7 +214,9 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
         Objects.requireNonNull(mDialog.getWindow()).clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mContext.getApplication().unregisterActivityLifecycleCallbacks(this);
         (mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        dismiss();
+        if (mPlayer != null)
+            mPlayer.release();
+        FullScreenEventManager.notifyFullScreenDismissed();
         stopAdStartedTimer();
     }
 
