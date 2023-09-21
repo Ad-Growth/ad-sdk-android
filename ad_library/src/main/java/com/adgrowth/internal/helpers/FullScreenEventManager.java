@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * this class handle full screen ads to pause another ads and
  * avoid to show two or more full screen ads at same time
- * */
+ */
 public class FullScreenEventManager {
     private static Integer adCurrentlyShown = null;
     private static List<FullScreenListener> fullScreenListeners = new ArrayList<>();
@@ -35,7 +35,7 @@ public class FullScreenEventManager {
         }
     }
 
-    public static boolean getShowPermission (){
+    public static boolean getShowPermission() {
         return adCurrentlyShown == null;
     }
 }
