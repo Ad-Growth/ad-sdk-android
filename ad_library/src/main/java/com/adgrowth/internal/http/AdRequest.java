@@ -74,9 +74,8 @@ public class AdRequest {
 
             mApiClient.get("", new HashMap<>());
 
-        } catch (APIIOException e) {
-            // TODO: handle it?
-            e.printStackTrace();
+        } catch (APIIOException ignored) {
+
         }
 
     }

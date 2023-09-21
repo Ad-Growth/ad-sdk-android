@@ -1,5 +1,7 @@
 package com.adgrowth.internal.helpers;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,7 +40,7 @@ public class JSONHelper {
         }
     }
 
-    public static int getInt(JSONObject json, String field, int defaultValue) {
+    public static Integer getInt(JSONObject json, String field, Integer defaultValue) {
         try {
             return json.getInt(field);
         } catch (JSONException e) {
@@ -47,12 +49,12 @@ public class JSONHelper {
     }
 
 
-    public static int safeGetInt(JSONObject json, String field, int defaultValue) {
+    public static Integer safeGetInt(JSONObject json, String field, Integer defaultValue) {
         return getInt(json, field, defaultValue);
 
     }
 
-    public static int safeGetInt(JSONObject json, String field) {
+    public static Integer safeGetInt(JSONObject json, String field) {
         return getInt(json, field, 0);
     }
 
@@ -71,4 +73,6 @@ public class JSONHelper {
     public static double safeGetDouble(JSONObject json, String field) {
         return getDouble(json, field, 0.0);
     }
+
+
 }
