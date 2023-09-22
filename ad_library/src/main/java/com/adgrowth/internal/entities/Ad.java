@@ -11,13 +11,17 @@ import com.adgrowth.internal.helpers.JSONHelper;
 import org.json.JSONObject;
 
 public class Ad {
+
     public static final String DEFAULT_REWARD_ITEM = "reward_item";
     public final static String ALREADY_CONSUMED = "already_consumed";
     public final static String NOT_READY = "not_ready";
-    private final int DEFAULT_REFRESH_RATE = 30;
-    private final int DEFAULT_REWARD_VALUE = 1;
-    private final int mRewardValue;
-    private final int mRefreshRate;
+    public static final String ALREADY_SHOWING_FULL_SCREEN_AD = "already_showing_full_screen_ad";
+    public final static Integer AUTO_REFRESH_RATE = null;
+    public final static Integer DISABLED_REFRESH_RATE = 0;
+    public final static Integer DEFAULT_REFRESH_RATE = 30;
+    private final Integer DEFAULT_REWARD_VALUE = 1;
+    private final Integer mRewardValue;
+    private final Integer mRefreshRate;
     private final String mId;
     private final String mRewardItem;
     private final String mIpAddress;
@@ -46,7 +50,7 @@ public class Ad {
         // meta
         this.mRewardItem = JSONHelper.safeGetString(meta, "reward_item", DEFAULT_REWARD_ITEM);
         this.mRewardValue = JSONHelper.safeGetInt(meta, "reward_value", DEFAULT_REWARD_VALUE);
-        this.mRefreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", DEFAULT_REFRESH_RATE);
+        this.mRefreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null);
         this.mIpAddress = JSONHelper.safeGetString(meta, "ip_address");
     }
 
@@ -115,7 +119,7 @@ public class Ad {
         return this.mIpAddress;
     }
 
-    public int getRefreshRate() {
+    public Integer getRefreshRate() {
         return mRefreshRate;
     }
 

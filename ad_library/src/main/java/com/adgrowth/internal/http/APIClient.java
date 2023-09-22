@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 public class APIClient {
 
-    private String mBaseUrl = "https://apiad.adgrowth.com";
+    private String mBaseUrl = "https://apiad-hml.adgrowth.com";
 
     public APIClient(String baseUrl) {
         mBaseUrl = baseUrl;
@@ -32,7 +32,7 @@ public class APIClient {
 
         String query = QueryStringHelpers.encode(params);
         String urlString = mBaseUrl + path + query;
-
+        
         try {
             URL url = new URL(urlString);
 
@@ -116,11 +116,9 @@ public class APIClient {
                 reader.close();
                 this.responseString = response.toString();
 
-                if (!successful)
-                    throw new APIIOException(this);
+                if (!successful) throw new APIIOException(this);
 
-            } catch (
-                    IOException e) {
+            } catch (IOException e) {
                 throw new APIIOException(this);
 
             }
@@ -128,11 +126,10 @@ public class APIClient {
         }
 
         public JSONObject json() {
-            if (responseString != null)
-                try {
-                    return new JSONObject(responseString);
-                } catch (JSONException ignored) {
-                }
+            if (responseString != null) try {
+                return new JSONObject(responseString);
+            } catch (JSONException ignored) {
+            }
             return new JSONObject();
         }
 
