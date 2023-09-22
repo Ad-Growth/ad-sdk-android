@@ -12,13 +12,12 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AdPlayer extends TextureView
-        implements
-        TextureView.SurfaceTextureListener,
-        MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener {
+public class AdPlayer extends TextureView implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
+    public enum ScaleType {
+        FIT_CENTER, CENTER_CROP
+    }
 
+    private ScaleType scaleType = ScaleType.FIT_CENTER;
     MediaPlayer mMediaPlayer;
     private int mCurrentPosition = 0;
     private Listener mListener;
@@ -39,18 +38,25 @@ public class AdPlayer extends TextureView
             mMediaPlayer.setDataSource(url);
             mMediaPlayer.setOnPreparedListener(this);
             mMediaPlayer.setOnErrorListener(this);
-
             mMediaPlayer.setOnCompletionListener(this);
-
             mMediaPlayer.prepareAsync();
 
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
-
     }
+
+
+    public void setMuted(boolean muted) {
+        float vol = muted ? 0 : 1;
+        mMediaPlayer.setVolume(vol, vol);
+    }
+
+    public void setScaleType(ScaleType scaleType) {
+        this.scaleType = scaleType;
+    }
+
 
     void trackProgress() {
         if (mReleased || mMediaPlayer == null) return;
@@ -61,9 +67,7 @@ public class AdPlayer extends TextureView
             public void run() {
                 if (mListener != null) ((Activity) getContext()).runOnUiThread(() -> {
                     try {
-                        mListener.onVideoProgressChanged(
-                                (double) (mMediaPlayer.getCurrentPosition() / 1000),
-                                (double) (mAdDuration));
+                        mListener.onVideoProgressChanged(((double) mMediaPlayer.getCurrentPosition() / 1000.0), (double) mAdDuration);
                     } catch (Exception ignored) {
                     }
                 });
@@ -75,26 +79,42 @@ public class AdPlayer extends TextureView
     }
 
 
-
-    private void adjustAspectRatio(int videoWidth, int videoHeight) {
+    private void adjustScale(int videoWidth, int videoHeight) {
         int viewWidth = this.getWidth();
         int viewHeight = this.getHeight();
 
-        double aspectRatio = (double) videoHeight / videoWidth;
+        double aspectRatio = (double) videoWidth / videoHeight;
 
         int newWidth, newHeight;
-        if (viewHeight > (int) (viewWidth * aspectRatio)) {
+        int xOffset = 0;
+        int yOffset = 0;
 
-            newWidth = viewWidth;
-            newHeight = (int) (viewWidth * aspectRatio);
-        } else {
+        switch (scaleType) {
+            case CENTER_CROP:
+                if (viewHeight > (int) (viewWidth / aspectRatio)) {
+                    newWidth = (int) (viewHeight * aspectRatio);
+                    newHeight = viewHeight;
+                    xOffset = (viewWidth - newWidth) / 2;
+                } else {
+                    newWidth = viewWidth;
+                    newHeight = (int) (viewWidth / aspectRatio);
+                    yOffset = (viewHeight - newHeight) / 2;
+                }
+                break;
+            case FIT_CENTER:
+            default:
+                if (viewHeight > (int) (viewWidth / aspectRatio)) {
+                    newWidth = viewWidth;
+                    newHeight = (int) (viewWidth / aspectRatio);
+                } else {
+                    newWidth = (int) (viewHeight * aspectRatio);
+                    newHeight = viewHeight;
+                }
+                xOffset = (viewWidth - newWidth) / 2;
+                yOffset = (viewHeight - newHeight) / 2;
+                break;
 
-            newWidth = (int) (viewHeight / aspectRatio);
-            newHeight = viewHeight;
         }
-
-        int xOffset = (viewWidth - newWidth) / 2;
-        int yOffset = (viewHeight - newHeight) / 2;
 
         Matrix matrix = new Matrix();
         this.getTransform(matrix);
@@ -105,7 +125,7 @@ public class AdPlayer extends TextureView
 
     public void release() {
         if (mReleased || mMediaPlayer == null) return;
-
+        stopTrackingProgress();
         mMediaPlayer.reset();
         mMediaPlayer.release();
         mReleased = true;
@@ -114,9 +134,13 @@ public class AdPlayer extends TextureView
 
     public void play() {
         if (mReleased || mMediaPlayer == null) return;
-        mMediaPlayer.seekTo(mCurrentPosition);
-        trackProgress();
-        mMediaPlayer.start();
+
+        if (!mMediaPlayer.isPlaying()) {
+
+            mMediaPlayer.seekTo(mCurrentPosition);
+            trackProgress();
+            mMediaPlayer.start();
+        }
 
         if (mListener != null) mListener.onPlay();
     }
@@ -124,16 +148,21 @@ public class AdPlayer extends TextureView
     public void pause() {
         if (mReleased || mMediaPlayer == null) return;
         try {
+            stopTrackingProgress();
 
             if (mListener != null) mListener.onPause();
 
             mCurrentPosition = mMediaPlayer.getCurrentPosition();
-            stopTrackingProgress();
-            mMediaPlayer.pause();
+
+            if (mMediaPlayer.isPlaying()) mMediaPlayer.pause();
         } catch (IllegalStateException ignored) {
+            ignored.printStackTrace();
         }
     }
 
+    public int getAdDuration() {
+        return mAdDuration;
+    }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
@@ -143,34 +172,35 @@ public class AdPlayer extends TextureView
 
     private void stopTrackingProgress() {
         try {
-            if (mTimer != null) mTimer.cancel();
+            if (mTimer != null) {
+                mTimer.cancel();
+                mTimer = null;
+            }
         } catch (Exception ignored) {
         }
     }
 
     @Override
-    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+    public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
         if (mListener != null) mListener.onVideoError();
         return false;
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        adjustAspectRatio(mp.getVideoWidth(), mp.getVideoHeight());
+        adjustScale(mp.getVideoWidth(), mp.getVideoHeight());
         mAdDuration = (int) Math.ceil((double) (mp.getDuration() / 1000));
-
         if (mListener != null) mListener.onVideoReady(mAdDuration);
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
         if (mReleased || mMediaPlayer == null) return;
-        adjustAspectRatio(mMediaPlayer.getVideoWidth(), mMediaPlayer.getVideoHeight());
+        adjustScale(mMediaPlayer.getVideoWidth(), mMediaPlayer.getVideoHeight());
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        release();
         return false;
     }
 
@@ -178,13 +208,12 @@ public class AdPlayer extends TextureView
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
         if (mReleased || mMediaPlayer == null) return;
         mMediaPlayer.setSurface(new Surface(surfaceTexture));
-        play();
     }
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
         if (mReleased || mMediaPlayer == null) return;
-        adjustAspectRatio(mMediaPlayer.getVideoWidth(), mMediaPlayer.getVideoHeight());
+        adjustScale(mMediaPlayer.getVideoWidth(), mMediaPlayer.getVideoHeight());
     }
 
 
