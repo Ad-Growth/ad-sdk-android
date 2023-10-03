@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 public class APIClient {
 
-    private String mBaseUrl = "https://apiad-hml.adgrowth.com";
+    private String mBaseUrl = "https://apiad.adgrowth.com";
 
     public APIClient(String baseUrl) {
         mBaseUrl = baseUrl;
