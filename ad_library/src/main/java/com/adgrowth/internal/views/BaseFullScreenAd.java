@@ -21,7 +21,7 @@ import com.adgrowth.internal.enums.AdMediaType;
 import com.adgrowth.internal.enums.AdType;
 import com.adgrowth.internal.helpers.AdUriHelpers;
 import com.adgrowth.internal.helpers.ScreenHelpers;
-import com.adgrowth.internal.interfaces.BaseAdListener;
+import com.adgrowth.adserver.interfaces.BaseAdListener;
 
 import java.util.HashMap;
 import java.util.Objects;

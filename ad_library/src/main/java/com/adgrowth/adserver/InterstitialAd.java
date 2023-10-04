@@ -2,12 +2,9 @@ package com.adgrowth.adserver;
 
 import android.app.Activity;
 
-import com.adgrowth.internal.entities.Ad;
-import com.adgrowth.internal.enums.AdMediaType;
+import com.adgrowth.adserver.interfaces.BaseAdListener;
 import com.adgrowth.internal.enums.AdType;
-import com.adgrowth.internal.helpers.FullScreenEventManager;
 import com.adgrowth.internal.http.AdRequest;
-import com.adgrowth.internal.interfaces.BaseAdListener;
 import com.adgrowth.internal.views.BaseFullScreenAd;
 
 public class InterstitialAd extends BaseFullScreenAd<InterstitialAd.Listener> {

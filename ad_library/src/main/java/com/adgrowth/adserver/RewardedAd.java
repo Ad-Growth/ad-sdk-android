@@ -3,10 +3,10 @@ package com.adgrowth.adserver;
 import android.app.Activity;
 import android.content.DialogInterface;
 
+import com.adgrowth.adserver.interfaces.BaseAdListener;
 import com.adgrowth.adserver.entities.RewardItem;
 import com.adgrowth.internal.enums.AdType;
 import com.adgrowth.internal.http.AdRequest;
-import com.adgrowth.internal.interfaces.BaseAdListener;
 import com.adgrowth.internal.views.BaseFullScreenAd;
 
 public class RewardedAd extends BaseFullScreenAd<RewardedAd.Listener> {
