@@ -9,8 +9,7 @@ import com.adgrowth.internal.views.BaseFullScreenAd;
 
 public class InterstitialAd extends BaseFullScreenAd<InterstitialAd.Listener> {
     public InterstitialAd(String unitId) {
-        this.mUnitId = unitId;
-        this.mAdRequest = new AdRequest();
+        this.mAdRequest = new AdRequest(unitId);
     }
 
     public void load(Activity context) {

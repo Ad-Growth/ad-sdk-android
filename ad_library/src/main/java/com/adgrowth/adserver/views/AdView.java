@@ -61,8 +61,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
             mContext.runOnUiThread(() -> Toast.makeText(mContext, "AD NOT LOADED YET", Toast.LENGTH_SHORT).show());
             return;
         }
-
-        AdUriHelpers.openUrl(mContext, mAd.getActionUrl(), mAd.getIpAddress());
+        mAdRequest.sendClick(mContext, mAd);
 
         if (mListener != null) mContext.runOnUiThread(() -> mListener.onClicked());
 
@@ -188,7 +187,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
         FullScreenEventManager.registerFullScreenListener(this);
         setOnClickListener(onAdClickListener);
         mContext.getApplication().registerActivityLifecycleCallbacks(AdView.this);
-        mAdRequest = new AdRequest();
+        mAdRequest = new AdRequest(mUnitId);
         loadAd();
     }
 
@@ -211,7 +210,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
                 options.put("orientation", mOrientation.toString());
                 options.put("dimension", mSize.toString());
 
-                mAd = mAdRequest.getAd(mUnitId, options);
+                mAd = mAdRequest.getAd(options);
 
                 if (mAd.getType() != AdType.BANNER)
                     throw new AdRequestException(AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE);
@@ -279,9 +278,9 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
         }
     }
 
-    public void startAdDisplayTimer() {
+    private void startAdDisplayTimer() {
         if (mAdDisplayTimer != null) mAdDisplayTimer.cancel();
-        if (mTimeToRefresh == Ad.DISABLED_REFRESH_RATE) return;
+        if (Objects.equals(mTimeToRefresh, Ad.DISABLED_REFRESH_RATE)) return;
 
         mAdDisplayTimer = new Timer();
 
@@ -296,7 +295,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
         mAdDisplayTimer.scheduleAtFixedRate(task, 1000, 1000);
     }
 
-    public void stopAdStartedTimer() {
+    private void stopAdStartedTimer() {
         if (mAdDisplayTimer != null) {
             mAdDisplayTimer.cancel();
             mAdDisplayTimer = null;
