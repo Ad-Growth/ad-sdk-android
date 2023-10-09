@@ -31,7 +31,6 @@ import java.util.TimerTask;
 public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implements Application.ActivityLifecycleCallbacks, DialogInterface.OnShowListener, DialogInterface.OnDismissListener, AdPlayer.Listener, AdImage.Listener {
     private static final int DEFAULT_AD_DURATION = 30;
     protected static final int TIME_TO_CLOSE = 5;
-    protected String mUnitId;
     protected AdImage mAdImage;
     protected Listener mListener;
     protected AdRequest mAdRequest;
@@ -51,7 +50,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
 
         if (view.isEnabled()) {
 
-            AdUriHelpers.openUrl(mContext, mAd.getActionUrl(), mAd.getIpAddress());
+            mAdRequest.sendClick(mContext, mAd);
             if (mListener != null) mListener.onClicked();
 
         }
@@ -74,7 +73,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
 
                 options.put("orientation", ScreenHelpers.getOrientation(context));
 
-                mAd = mAdRequest.getAd(mUnitId, options);
+                mAd = mAdRequest.getAd(options);
 
                 if (mAd.getType() != adType) {
                     throw new AdRequestException(AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE);
@@ -169,7 +168,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
         return mFailedToLoad;
     }
 
-    public void startAdDisplayTimer() {
+    protected void startAdDisplayTimer() {
         if (mAdDisplayTimer != null) mAdDisplayTimer.cancel();
 
         mAdDisplayTimer = new Timer();
@@ -185,7 +184,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
         mAdDisplayTimer.scheduleAtFixedRate(task, 1000, 1000);
     }
 
-    public void stopAdStartedTimer() {
+    protected void stopAdStartedTimer() {
         if (mAdDisplayTimer != null) {
             mAdDisplayTimer.cancel();
             mAdDisplayTimer = null;
@@ -199,7 +198,11 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
 
         (mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         Objects.requireNonNull(mDialog.getWindow()).addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mPlayer.play();
+
+        if (mPlayer != null && mAd.getMediaType() == AdMediaType.VIDEO) {
+            mPlayer.play();
+        }
+
         startAdDisplayTimer();
 
 
@@ -214,8 +217,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
         Objects.requireNonNull(mDialog.getWindow()).clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mContext.getApplication().unregisterActivityLifecycleCallbacks(this);
         (mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        if (mPlayer != null)
-            mPlayer.release();
+        if (mPlayer != null) mPlayer.release();
         FullScreenEventManager.notifyFullScreenDismissed();
         stopAdStartedTimer();
     }
