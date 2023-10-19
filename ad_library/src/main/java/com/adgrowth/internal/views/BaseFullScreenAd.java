@@ -12,16 +12,15 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.adgrowth.internal.helpers.FullScreenEventManager;
-import com.adgrowth.internal.http.AdRequest;
 import com.adgrowth.adserver.R;
 import com.adgrowth.adserver.exceptions.AdRequestException;
+import com.adgrowth.adserver.interfaces.BaseAdListener;
 import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.internal.enums.AdMediaType;
 import com.adgrowth.internal.enums.AdType;
-import com.adgrowth.internal.helpers.AdUriHelpers;
+import com.adgrowth.internal.helpers.FullScreenEventManager;
 import com.adgrowth.internal.helpers.ScreenHelpers;
-import com.adgrowth.adserver.interfaces.BaseAdListener;
+import com.adgrowth.internal.http.AdRequest;
 
 import java.util.HashMap;
 import java.util.Objects;

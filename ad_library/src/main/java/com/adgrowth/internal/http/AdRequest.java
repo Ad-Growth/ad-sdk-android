@@ -104,15 +104,15 @@ public class AdRequest {
             try {
                 HashMap<String, Object> params = new HashMap<>();
 
-                params.put("type", type);
                 params.put("unit_id", mUnitId);
+                params.put("type", type.toString());
                 params.put("ad_id", ad.getId());
-                params.put("click_id", UUID.randomUUID().toString());
-                params.put("advertising_id", AdServer.getAdId());
-                params.put("site_id", context.getPackageName());
                 params.put("ip", ad.getIpAddress());
+                params.put("click_id", UUID.randomUUID().toString());
+                params.put("site_id", context.getPackageName());
+                params.put("advertising_id", AdServer.getAdId());
 
-                mApiClient.get("/adserver/api/adverts/event", params);
+                mApiClient.get("/adserver/api/adverts/events", params);
             } catch (APIIOException ignored) {
                 // TODO: ignore?
                 if (BuildConfig.DEBUG) {
