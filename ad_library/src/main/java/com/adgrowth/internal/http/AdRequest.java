@@ -105,7 +105,7 @@ public class AdRequest {
                 HashMap<String, Object> params = new HashMap<>();
 
                 params.put("unit_id", mUnitId);
-                params.put("type", type);
+                params.put("type", type.toString());
                 params.put("ad_id", ad.getId());
                 params.put("ip", ad.getIpAddress());
                 params.put("click_id", UUID.randomUUID().toString());
