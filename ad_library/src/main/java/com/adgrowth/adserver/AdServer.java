@@ -65,14 +65,14 @@ public class AdServer {
 
     private static void startSDK() {
 
-        new Thread(() -> {
+        (new Thread(() -> {
             try {
                 mAdId = mAdvertisingIdManager.getAdvertisingId();
             } catch (IOException | GooglePlayServicesNotAvailableException |
                      GooglePlayServicesRepairableException e) {
                 mAdId = mAdvertisingIdManager.getUniqueId();
             }
-        }).start();
+        })).start();
 
         new GetAddress(new GetAddress.OnStartCallback() {
             @Override
@@ -99,7 +99,7 @@ public class AdServer {
         return mClientKey;
     }
 
-    public static ClientProfile getUserProfile() {
+    public static ClientProfile getClientProfile() {
         return AdServer.mClientProfile;
     }
 

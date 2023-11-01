@@ -201,7 +201,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
     }
 
     private void loadAd() {
-        new Thread(() -> {
+        (new Thread(() -> {
             mFailedToLoad = false;
             mAdIsReady = false;
 
@@ -228,7 +228,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
                 if (mListener != null) mContext.runOnUiThread(() -> mListener.onFailedToLoad(e));
             }
 
-        }).start();
+        })).start();
     }
 
     void presentAd(Ad ad) {

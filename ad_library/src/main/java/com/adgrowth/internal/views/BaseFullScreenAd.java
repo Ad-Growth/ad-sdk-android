@@ -66,7 +66,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
             return;
         }
 
-        new Thread(() -> {
+        (new Thread(() -> {
             try {
                 HashMap<String, Object> options = new HashMap<>();
 
@@ -99,7 +99,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
                 context.runOnUiThread(() -> mListener.onFailedToLoad(e));
             }
 
-        }).start();
+        })).start();
 
     }
 

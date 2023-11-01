@@ -29,7 +29,7 @@ public class GetAddress extends AsyncTask<String, String, ClientAddress> {
     private SDKInitException mException;
 
     public GetAddress(OnStartCallback callback) {
-        this.mProfile = AdServer.getUserProfile();
+        this.mProfile = AdServer.getClientProfile();
         this.mCallback = callback;
         this.mApiClient = new APIClient();
     }
@@ -42,9 +42,7 @@ public class GetAddress extends AsyncTask<String, String, ClientAddress> {
             double latitude = mProfile.getClientAddress().getLatitude();
             double longitude = mProfile.getClientAddress().getLongitude();
 
-            ClientAddress clientAddress = getAddress(latitude, longitude);
-
-            return clientAddress;
+            return getAddress(latitude, longitude);
         } catch (AdRequestException e) {
             mException = new SDKInitException(e);
             return null;

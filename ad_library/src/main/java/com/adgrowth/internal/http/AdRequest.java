@@ -40,7 +40,7 @@ public class AdRequest {
         if (!AdServer.isInitialized()) {
             throw new AdRequestException(AdRequestException.SDK_NOT_INITIALIZED);
         }
-        ClientProfile profile = AdServer.getUserProfile();
+        ClientProfile profile = AdServer.getClientProfile();
         HashMap<String, Object> params = options;
         if (options == null) params = new HashMap<>();
 
@@ -100,7 +100,8 @@ public class AdRequest {
     }
 
     private void sendAdEvent(Activity context, AdEventType type, Ad ad) {
-        new Thread(() -> {
+
+        (new Thread(() -> {
             try {
                 HashMap<String, Object> params = new HashMap<>();
 
@@ -119,7 +120,7 @@ public class AdRequest {
                     ignored.printStackTrace();
                 }
             }
-        }).start();
+        })).start();
 
 
     }
