@@ -39,6 +39,4 @@ class GetAddressService {
             throw IOErrorHandler.handle(e)
         }
     }
-
-
 }
