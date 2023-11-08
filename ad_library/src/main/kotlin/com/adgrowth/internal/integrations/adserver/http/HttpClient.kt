@@ -1,6 +1,7 @@
 package com.adgrowth.internal.integrations.adserver.http
 
 import com.adgrowth.adserver.AdServer.clientKey
+import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.internal.integrations.adserver.helpers.QueryStringHelpers
 import com.adgrowth.internal.integrations.adserver.exceptions.APIIOException
 
@@ -14,7 +15,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class HttpClient {
-    private var mBaseUrl = "https://apiad-hml.adgrowth.com"
+    private var mBaseUrl = BuildConfig.API_ENDPOINT
 
     constructor()
     constructor(baseUrl: String) {
@@ -23,7 +24,7 @@ class HttpClient {
 
 
     @Throws(APIIOException::class)
-    operator fun get(path: String, params: HashMap<String, Any>): JSONObject {
+    operator fun get(path: String, params: HashMap<String, Any>?): JSONObject {
         val query = QueryStringHelpers.encode(params)
         val urlString = mBaseUrl + path + query
         return try {
