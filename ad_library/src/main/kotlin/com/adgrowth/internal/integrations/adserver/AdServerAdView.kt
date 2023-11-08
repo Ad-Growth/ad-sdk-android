@@ -225,7 +225,6 @@ class AdServerAdView : FillParentViewGroup,
     }
 
     private fun onRunningTimeChanged(elapsedTime: Double) {
-        println("CHANGED TIME: $elapsedTime")
         if (elapsedTime >= mAdDuration!!) {
             refreshAd()
         }
