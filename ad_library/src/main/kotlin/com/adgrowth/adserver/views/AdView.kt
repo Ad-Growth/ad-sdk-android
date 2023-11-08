@@ -1,6 +1,6 @@
 package com.adgrowth.adserver.views
 
-import android.content.Context
+import android.app.Activity
 import android.util.AttributeSet
 
 import com.adgrowth.adserver.enums.AdOrientation
@@ -13,21 +13,21 @@ import com.adgrowth.internal.interfaces.integration.AdViewIntegration
 class AdView : FillParentViewGroup, AdViewIntegration<AdView, AdView.Listener>,
     AdViewIntegration.Listener<AdServerAdView> {
     private val mAd: AdServerAdView
-    private lateinit var listener: Listener
+    private var listener: Listener? = null
 
-    constructor(context: Context) : super(context) {
+    constructor(context: Activity) : super(context) {
         mAd = AdServerAdView(context)
         mAd.setListener(this)
         addView(mAd)
     }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(context: Activity, attrs: AttributeSet?) : super(context, attrs) {
         mAd = AdServerAdView(context, attrs)
         mAd.setListener(this)
         addView(mAd)
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+    constructor(context: Activity, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context, attrs, defStyleAttr
     ) {
         mAd = AdServerAdView(context, attrs, defStyleAttr)
@@ -36,7 +36,7 @@ class AdView : FillParentViewGroup, AdViewIntegration<AdView, AdView.Listener>,
     }
 
     constructor(
-        context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
+        context: Activity, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
     ) : super(context, attrs, defStyleAttr, defStyleRes) {
         mAd = AdServerAdView(context, attrs, defStyleAttr, defStyleRes)
         mAd.setListener(this)
@@ -44,7 +44,7 @@ class AdView : FillParentViewGroup, AdViewIntegration<AdView, AdView.Listener>,
     }
 
     constructor(
-        context: Context, unitId: String, size: AdSizeType, orientation: AdOrientation
+        context: Activity, unitId: String, size: AdSizeType, orientation: AdOrientation
     ) : super(context) {
         mAd = AdServerAdView(context, unitId, size, orientation)
         mAd.setListener(this)
@@ -79,23 +79,23 @@ class AdView : FillParentViewGroup, AdViewIntegration<AdView, AdView.Listener>,
     }
 
     override fun onLoad(ad: AdServerAdView) {
-        listener.onLoad(this)
+        listener?.onLoad(this)
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        listener.onFailedToLoad(exception)
+        listener?.onFailedToLoad(exception)
     }
 
     override fun onClicked() {
-        listener.onClicked()
+        listener?.onClicked()
     }
 
     override fun onFailedToShow(code: String?) {
-        listener.onFailedToShow(code)
+        listener?.onFailedToShow(code)
     }
 
     override fun onImpression() {
-        listener.onImpression()
+        listener?.onImpression()
     }
 
 

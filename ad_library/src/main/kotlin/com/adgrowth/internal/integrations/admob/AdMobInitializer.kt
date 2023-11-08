@@ -3,7 +3,6 @@ package com.adgrowth.internal.integrations.admob
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.internal.interfaces.integration.InitializerIntegration
 import com.google.android.gms.ads.MobileAds
 
@@ -16,7 +15,7 @@ class AdMobInitializer(context: Context, override val clientKey: String?) :
         private set
 
     override fun initialize(listener: Listener) {
-        this.listener = listener
+        mListener = listener
 
         val app: ApplicationInfo = context.packageManager.getApplicationInfo(
             context.packageName, PackageManager.GET_META_DATA
@@ -36,7 +35,7 @@ class AdMobInitializer(context: Context, override val clientKey: String?) :
 
             MobileAds.initialize(this.context) {
                 isInitialized = true;
-                this@AdMobInitializer.listener?.onInit(this@AdMobInitializer)
+                this@AdMobInitializer.mListener?.onInit(this@AdMobInitializer)
             }
         } else {
             isFailed = true

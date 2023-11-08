@@ -7,7 +7,7 @@ import com.adgrowth.internal.interfaces.integration.InterstitialIntegration
 
 
 class InterstitialAd(unitId: String) :    AdServerInterstitial.Listener {
-    private lateinit var listener: Listener
+    private lateinit var mListener: Listener
     private var mAd: AdServerInterstitial
 
     init {
@@ -16,7 +16,7 @@ class InterstitialAd(unitId: String) :    AdServerInterstitial.Listener {
     }
 
     fun setListener(listener: Listener) {
-        this.listener = listener;
+        this.mListener = listener;
     }
 
     fun show(context: Activity) {
@@ -37,27 +37,27 @@ class InterstitialAd(unitId: String) :    AdServerInterstitial.Listener {
 
 
     override fun onDismissed() {
-        listener?.onDismissed()
+        mListener.onDismissed()
     }
 
     override fun onLoad(ad: AdServerInterstitial) {
-        listener.onLoad(this)
+        mListener.onLoad(this)
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        listener?.onFailedToLoad(exception)
+        mListener.onFailedToLoad(exception)
     }
 
     override fun onClicked() {
-        listener.onClicked()
+        mListener.onClicked()
     }
 
     override fun onFailedToShow(code: String?) {
-        listener.onFailedToShow(code)
+        mListener.onFailedToShow(code)
     }
 
     override fun onImpression() {
-        listener.onImpression()
+        mListener.onImpression()
     }
 
     interface Listener : InterstitialIntegration.Listener<InterstitialAd>

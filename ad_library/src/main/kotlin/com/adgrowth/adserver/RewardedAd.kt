@@ -10,7 +10,7 @@ import com.adgrowth.internal.interfaces.integration.RewardedIntegration
 
 class RewardedAd(unitId: String) : AdServerRewarded.Listener {
 
-    private lateinit var listener: Listener
+    private lateinit var mListener: Listener
     var mAd: AdServerRewarded
 
     init {
@@ -18,7 +18,7 @@ class RewardedAd(unitId: String) : AdServerRewarded.Listener {
     }
 
     fun setListener(listener: Listener) {
-        this.listener = listener;
+        this.mListener = listener;
         mAd.setListener(this)
     }
 
@@ -40,31 +40,31 @@ class RewardedAd(unitId: String) : AdServerRewarded.Listener {
 
 
     override fun onDismissed() {
-        listener?.onDismissed()
+        mListener.onDismissed()
     }
 
     override fun onLoad(ad: AdServerRewarded) {
-        listener.onLoad(this)
+        mListener.onLoad(this)
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        listener?.onFailedToLoad(exception)
+        mListener.onFailedToLoad(exception)
     }
 
     override fun onClicked() {
-        listener.onClicked()
+        mListener.onClicked()
     }
 
     override fun onFailedToShow(code: String?) {
-        listener.onFailedToShow(code)
+        mListener.onFailedToShow(code)
     }
 
     override fun onImpression() {
-        listener.onImpression()
+        mListener.onImpression()
     }
 
     override fun onEarnedReward(rewardItem: RewardItem?) {
-        listener.onEarnedReward(rewardItem)
+        mListener.onEarnedReward(rewardItem)
     }
 
 
