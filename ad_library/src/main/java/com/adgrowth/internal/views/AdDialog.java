@@ -1,5 +1,6 @@
 package com.adgrowth.internal.views;
 
+
 import android.app.Dialog;
 import android.content.Context;
 import android.view.Gravity;
@@ -7,6 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.Transformation;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,13 +27,11 @@ public class AdDialog extends Dialog {
 
     private final ProgressBar mProgressBar;
     private final ImageView mCloseBtn;
-
     private final TextView mCloseTextView;
 
 
     public AdDialog(@NonNull Context context) {
         super(context, android.R.style.Theme_Translucent_NoTitleBar);
-
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_fit_content);
@@ -51,9 +54,10 @@ public class AdDialog extends Dialog {
     }
 
     public void setVideoProgress(int progress) {
-        if (mProgressBar.getVisibility() != View.VISIBLE)
-            mProgressBar.setVisibility(View.VISIBLE);
-        mProgressBar.setProgress(progress);
+        if (mProgressBar.getVisibility() != View.VISIBLE) mProgressBar.setVisibility(View.VISIBLE);
+
+        mProgressBar.setProgress(progress, true);
+
     }
 
     public void enableCloseButton() {
@@ -64,21 +68,15 @@ public class AdDialog extends Dialog {
     public boolean isCloseButtonEnabled() {
         return mCloseBtn.isEnabled();
     }
-
     public void showButtonText() {
         mCloseTextView.setVisibility(View.VISIBLE);
     }
-
-    public void hideButtonText() {
-        mCloseTextView.setVisibility(View.GONE);
-    }
-
-
     public void hideProgressBar() {
         mProgressBar.setVisibility(View.GONE);
     }
-
     public void setButtonLabelText(String text) {
         mCloseTextView.setText(text);
     }
+
+
 }

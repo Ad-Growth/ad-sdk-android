@@ -72,6 +72,10 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
         super.onDetachedFromWindow();
 
         stopAdStartedTimer();
+        FullScreenEventManager.unregisterFullScreenListener(this);
+
+        mContext.getApplication().unregisterActivityLifecycleCallbacks(AdView.this);
+
     }
 
     public AdView(Context context, String unitId, AdSizeType size, AdOrientation orientation) {
