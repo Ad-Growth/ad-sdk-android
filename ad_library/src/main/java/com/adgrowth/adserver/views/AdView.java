@@ -277,7 +277,6 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
     }
 
     private void onDisplayTimeChanged(double adStartedTime) {
-        System.out.println("CHANGED TIME: " + adStartedTime);
         if (adStartedTime >= mTimeToRefresh) {
             refreshAd();
         }
