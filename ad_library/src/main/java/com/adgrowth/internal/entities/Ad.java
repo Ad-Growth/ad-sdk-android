@@ -4,6 +4,7 @@ package com.adgrowth.internal.entities;
 import androidx.annotation.NonNull;
 
 import com.adgrowth.adserver.entities.RewardItem;
+import com.adgrowth.adserver.enums.AdOrientation;
 import com.adgrowth.internal.enums.AdMediaType;
 import com.adgrowth.internal.enums.AdType;
 import com.adgrowth.internal.helpers.JSONHelper;
@@ -32,6 +33,7 @@ public class Ad {
     private final String mPostMediaUrl;
     private final AdMediaType mMediaType;
     private boolean mConsumed = false;
+    private AdOrientation mOrientation;
 
 
     public Ad(JSONObject json) {
@@ -46,6 +48,7 @@ public class Ad {
         this.mActionUrl = JSONHelper.safeGetString(advert, "action_url");
         this.mImpressionUrl = JSONHelper.safeGetString(advert, "impression_url");
         this.mPostMediaUrl = JSONHelper.safeGetString(advert, "post_media_url");
+        this.mOrientation = AdOrientation.valueOf(JSONHelper.safeGetString(advert, "orientation"));
 
         // meta
         this.mRewardItem = JSONHelper.safeGetString(meta, "reward_item", DEFAULT_REWARD_ITEM);
@@ -125,5 +128,9 @@ public class Ad {
 
     public String getImpressionUrl() {
         return this.mImpressionUrl;
+    }
+
+    public AdOrientation getOrientation() {
+        return mOrientation;
     }
 }

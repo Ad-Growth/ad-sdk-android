@@ -1,5 +1,8 @@
 package com.adgrowth.internal.views;
 
+import static com.adgrowth.internal.helpers.ScreenHelpers.getOrientation;
+import static com.adgrowth.internal.helpers.ScreenHelpers.setOrientation;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.DialogInterface;
@@ -13,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.adgrowth.adserver.R;
+import com.adgrowth.adserver.enums.AdOrientation;
 import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.interfaces.BaseAdListener;
 import com.adgrowth.internal.entities.Ad;
@@ -55,6 +59,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
         }
     };
     protected View.OnClickListener onCloseListener = view -> dismiss();
+    private AdOrientation lastOrientation;
 
 
     protected void requestAd(Activity context, AdType adType) {
@@ -70,7 +75,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
             try {
                 HashMap<String, Object> options = new HashMap<>();
 
-                options.put("orientation", ScreenHelpers.getOrientation(context));
+                options.put("orientation", getOrientation(context));
 
                 mAd = mAdRequest.getAd(options);
 
@@ -195,6 +200,10 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
         mContext.runOnUiThread(() -> this.mListener.onImpression());
         mContext.getApplication().registerActivityLifecycleCallbacks(this);
 
+        lastOrientation = getOrientation(mContext);
+
+        setOrientation(mContext, mAd.getOrientation());
+
         (mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
         Objects.requireNonNull(mDialog.getWindow()).addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -215,7 +224,12 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
     public void onDismiss(DialogInterface dialogInterface) {
         Objects.requireNonNull(mDialog.getWindow()).clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mContext.getApplication().unregisterActivityLifecycleCallbacks(this);
+
+        setOrientation(mContext, lastOrientation);
+
         (mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+
+
         if (mPlayer != null) mPlayer.release();
         FullScreenEventManager.notifyFullScreenDismissed();
         stopAdStartedTimer();

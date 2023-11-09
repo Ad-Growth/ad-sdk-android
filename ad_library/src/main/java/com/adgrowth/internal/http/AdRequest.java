@@ -14,6 +14,7 @@ import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.internal.helpers.IOErrorHandler;
 import com.adgrowth.internal.helpers.AdUriHelpers;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -67,7 +68,13 @@ public class AdRequest {
 
         try {
             JSONObject response = mApiClient.get("/adserver/api/adverts/search", params);
+            if (params.containsKey("orientation")) {
+                try {
+                    response.getJSONObject("advert").put("orientation", params.get("orientation"));
+                } catch (JSONException ignore) {
 
+                }
+            }
             return new Ad(response);
         } catch (APIIOException e) {
             throw IOErrorHandler.handle(e);
