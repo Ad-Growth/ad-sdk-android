@@ -75,7 +75,7 @@ public abstract class BaseFullScreenAd<Listener extends BaseAdListener> implemen
             try {
                 HashMap<String, Object> options = new HashMap<>();
 
-                options.put("orientation", getOrientation(context));
+                options.put("orientation", getOrientation(context).toString());
 
                 mAd = mAdRequest.getAd(options);
 
