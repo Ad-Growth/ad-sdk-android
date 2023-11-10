@@ -38,6 +38,11 @@ class GetAdService(private val unitId: String) {
 
         return try {
             val response = mHttpClient["/adserver/api/adverts/search", params]
+
+            if (params.containsKey("orientation")) {
+                response.getJSONObject("advert").put("orientation", params["orientation"])
+            }
+
             Ad(response)
         } catch (e: APIIOException) {
             throw IOErrorHandler.handle(e)

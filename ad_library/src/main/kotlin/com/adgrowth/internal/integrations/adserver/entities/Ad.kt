@@ -1,6 +1,7 @@
 package com.adgrowth.internal.integrations.adserver.entities
 
 import com.adgrowth.adserver.entities.RewardItem
+import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.internal.integrations.adserver.enums.AdMediaType
 import com.adgrowth.internal.integrations.adserver.enums.AdType
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
@@ -18,6 +19,7 @@ class Ad(json: JSONObject) {
     val actionUrl: String
     val postMediaUrl: String
     val mediaType: AdMediaType
+    val orientation: AdOrientation
     var isConsumed = false
 
     init {
@@ -32,6 +34,7 @@ class Ad(json: JSONObject) {
         actionUrl = JSONHelper.safeGetString(advert, "action_url")
         impressionUrl = JSONHelper.safeGetString(advert, "impression_url")
         postMediaUrl = JSONHelper.safeGetString(advert, "post_media_url")
+        orientation = AdOrientation.valueOf(JSONHelper.safeGetString(advert, "orientation"))
 
         // meta
         mRewardItem = JSONHelper.safeGetString(meta, "reward_item", DEFAULT_REWARD_ITEM)
@@ -72,7 +75,7 @@ class Ad(json: JSONObject) {
         @JvmField
         val AUTO_REFRESH_RATE: Int? = null
         const val DISABLED_REFRESH_RATE = 0
-        const val DEFAULT_REFRESH_RATE = 30
+        const val DEFAULT_AD_DURATION = 30
         const val DEFAULT_REWARD_VALUE = 1
     }
 }
