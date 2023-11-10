@@ -15,7 +15,7 @@ class AdServerRewarded(unitId: String) :
     private var mRewarded = false
 
     init {
-        mAdRequest = AdRequest(unitId!!)
+        mAdRequest = AdRequest(unitId)
     }
 
     public override fun onShow(dialogInterface: DialogInterface?) {
@@ -46,13 +46,13 @@ class AdServerRewarded(unitId: String) :
         mListener = listener
     }
 
-    public override fun onDisplayTimeChanged(adStartedTime: Int) {
-        super.onDisplayTimeChanged(adStartedTime)
+    public override fun onRunningTimeChanged(adStartedTime: Int) {
+        super.onRunningTimeChanged(adStartedTime)
         val remainingTime = ceil((TIME_TO_REWARD - adStartedTime).toDouble()).toInt()
         if (remainingTime < 0) {
             if (remainingTime <= TIME_TO_SHOW_TAP_TO_CLOSE) {
                 mDialog!!.setButtonLabelText(mContext!!.getString(R.string.tap_to_close))
-                stopAdStartedTimer()
+                pauseRunningTimer()
             }
             return
         }

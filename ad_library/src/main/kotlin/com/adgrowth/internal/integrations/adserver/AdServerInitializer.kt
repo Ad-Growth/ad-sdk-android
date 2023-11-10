@@ -18,7 +18,7 @@ class AdServerInitializer(
     context, clientKey
 ) {
     private val profile: ClientProfile = AdServer.clientProfile
-    private val getAppMetadataService = GetAppMetaService(clientKey)
+    private val getAppMetadataService = GetAppMetaService()
     private val getAddressService = GetAddressService()
     private var mClientKey: String? = null
     var appMetadata: AppMetaData? = null
