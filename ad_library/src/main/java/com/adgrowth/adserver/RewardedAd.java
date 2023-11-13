@@ -17,8 +17,7 @@ public class RewardedAd extends BaseFullScreenAd<RewardedAd.Listener> {
     private boolean mRewarded = false;
 
     public RewardedAd(String unitId) {
-        this.mUnitId = unitId;
-        this.mAdRequest = new AdRequest();
+        this.mAdRequest = new AdRequest(unitId);
     }
 
     @Override
