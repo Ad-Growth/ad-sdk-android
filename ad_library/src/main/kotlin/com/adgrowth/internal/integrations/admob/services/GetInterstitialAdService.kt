@@ -25,7 +25,7 @@ class GetInterstitialAdService(override val manager: InterstitialManager) :
             }
 
             override fun onAdLoaded(ad: InterstitialAd) {
-                manager.adId = "ADMOB_REWARDED"
+                manager.adId = "ADMOB_INTERSTITIAL"
                 manager.ipAddress = InitializationManager.IP_ADDRESS
                 future.complete(ad)
             }

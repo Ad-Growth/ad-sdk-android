@@ -34,7 +34,7 @@ class GetAdViewService(override val manager: AdViewManager) :
 
             override fun onAdLoaded() {
                 super.onAdLoaded()
-                manager.adId = "ADMOB_REWARDED"
+                manager.adId = "ADMOB_ADVIEW"
                 manager.refreshRate = Ad.DEFAULT_AD_DURATION
                 manager.ipAddress = InitializationManager.IP_ADDRESS
                 future.complete(ad)
@@ -45,6 +45,7 @@ class GetAdViewService(override val manager: AdViewManager) :
             ad = AdView(context)
             ad.setAdSize(adSize)
             ad.layoutParams = getAdLayoutParams(manager.orientation, manager.size)
+
             ad.adListener = listener
             ad.adUnitId = manager.unitId
             ad.loadAd(adRequest)
