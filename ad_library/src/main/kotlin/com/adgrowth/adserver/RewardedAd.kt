@@ -4,69 +4,91 @@ package com.adgrowth.adserver
 import android.app.Activity
 import com.adgrowth.adserver.entities.RewardItem
 import com.adgrowth.adserver.exceptions.AdRequestException
+import com.adgrowth.internal.integrations.RewardedManager
 
-import com.adgrowth.internal.integrations.adserver.AdServerRewarded
-import com.adgrowth.internal.interfaces.integration.RewardedIntegration
+import com.adgrowth.internal.interfaces.exceptions.ExceptionTypes
+import com.adgrowth.internal.interfaces.integrations.RewardedIntegration
 
-class RewardedAd(unitId: String) : AdServerRewarded.Listener {
-
+class RewardedAd(unitId: String) : RewardedIntegration.Listener, ExceptionTypes() {
+    private lateinit var mContext: Activity
     private lateinit var mListener: Listener
-    var mAd: AdServerRewarded
+    private var mAdManager: RewardedManager
 
     init {
-        mAd = AdServerRewarded(unitId)
+        mAdManager = RewardedManager(unitId)
+        mAdManager.listener = this
     }
 
     fun setListener(listener: Listener) {
         this.mListener = listener;
-        mAd.setListener(this)
     }
 
     fun show(context: Activity) {
-        mAd.show(context);
+        mContext = context;
+        mAdManager.show(context);
     }
 
     fun load(context: Activity) {
-        mAd.load(context)
+        mContext = context;
+        mAdManager.load(context)
     }
 
     fun isLoaded(): Boolean {
-        return mAd.isLoaded()
+        return mAdManager.isLoaded
     }
 
     fun isFailed(): Boolean {
-        return mAd.isFailed()
+        return mAdManager.isFailed
     }
-
 
     override fun onDismissed() {
-        mListener.onDismissed()
+        mContext.runOnUiThread { mListener.onDismissed() }
     }
 
-    override fun onLoad(ad: AdServerRewarded) {
-        mListener.onLoad(this)
+    override fun onLoad(ad: RewardedIntegration) {
+        mContext.runOnUiThread { mListener.onLoad(this) }
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        mListener.onFailedToLoad(exception)
+        mContext.runOnUiThread { mListener.onFailedToLoad(exception) }
     }
 
     override fun onClicked() {
-        mListener.onClicked()
+        mContext.runOnUiThread { mListener.onClicked() }
     }
 
     override fun onFailedToShow(code: String?) {
-        mListener.onFailedToShow(code)
+        mContext.runOnUiThread { mListener.onFailedToShow(code) }
     }
 
     override fun onImpression() {
-        mListener.onImpression()
+        mContext.runOnUiThread { mListener.onImpression() }
     }
 
-    override fun onEarnedReward(rewardItem: RewardItem?) {
-        mListener.onEarnedReward(rewardItem)
+    override fun onEarnedReward(rewardItem: RewardItem) {
+        mContext.runOnUiThread { mListener.onEarnedReward(rewardItem) }
     }
 
 
-    interface Listener : RewardedIntegration.Listener<RewardedAd>
+    interface Listener {
+        fun onLoad(ad: RewardedAd)
+        fun onFailedToLoad(exception: AdRequestException?)
+        fun onEarnedReward(rewardItem: RewardItem)
+
+        @JvmDefault
+        fun onDismissed() {
+        }
+
+        @JvmDefault
+        fun onClicked() {
+        }
+
+        @JvmDefault
+        fun onFailedToShow(code: String?) {
+        }
+
+        @JvmDefault
+        fun onImpression() {
+        }
+    }
 }
