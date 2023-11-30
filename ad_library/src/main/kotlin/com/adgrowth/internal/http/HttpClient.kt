@@ -1,9 +1,10 @@
-package com.adgrowth.internal.integrations.adserver.http
+package com.adgrowth.internal.http
 
-import com.adgrowth.adserver.AdServer.clientKey
+
 import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.internal.integrations.adserver.helpers.QueryStringHelpers
-import com.adgrowth.internal.integrations.adserver.exceptions.APIIOException
+import com.adgrowth.internal.exceptions.APIIOException
+import com.adgrowth.internal.integrations.InitializationManager
 
 import org.json.JSONException
 import org.json.JSONObject
@@ -22,9 +23,8 @@ class HttpClient {
         mBaseUrl = baseUrl
     }
 
-
     @Throws(APIIOException::class)
-    operator fun get(path: String, params: HashMap<String, Any>?): JSONObject {
+    operator fun get(path: String, params: HashMap<String, Any> = HashMap()): JSONObject {
         val query = QueryStringHelpers.encode(params)
         val urlString = mBaseUrl + path + query
         return try {
@@ -34,18 +34,22 @@ class HttpClient {
             connection.requestMethod = "GET"
             connection.defaultUseCaches = false
             connection.useCaches = false
-            connection.setRequestProperty("client_key", clientKey)
+
+            // send only for our server
+            if (mBaseUrl.startsWith(BuildConfig.API_ENDPOINT))
+                connection.setRequestProperty("client_key", InitializationManager.CLIENT_KEY)
+
             val resp = Response(connection)
             resp.json()
         } catch (e: IOException) {
-            throw APIIOException(500, "internal_error")
+            throw APIIOException(HTTPStatusCode.INTERNAL_ERROR, "internal_error")
         }
     }
 
     inner class Response(connection: HttpURLConnection) {
         private var responseString: String? = null
         var message: String? = null
-        var statusCode = 0
+        var statusCode = HTTPStatusCode.NO_CONTENT
         fun string(): String? {
             return responseString
         }
@@ -76,8 +80,7 @@ class HttpClient {
         fun json(): JSONObject {
             if (responseString != null) try {
                 return JSONObject(responseString)
-            } catch (ignored: JSONException) {
-            }
+            } catch (ignored: JSONException) {}
             return JSONObject()
         }
     }
