@@ -84,21 +84,21 @@ public class AdRequest {
     public void sendImpression(Activity context, Ad ad) {
 
         sendAdEvent(context, AdEventType.VIEW, ad);
+        (new Thread(() -> {
+            try {
+                String impression_url = AdUriHelpers.replaceAdCallbackParams(context, ad.getImpressionUrl(), ad.getIpAddress());
 
-        try {
-            String impression_url = AdUriHelpers.replaceAdCallbackParams(context, ad.getImpressionUrl(), ad.getIpAddress());
+                APIClient impressionClient = new APIClient(impression_url);
 
-            APIClient impressionClient = new APIClient(impression_url);
+                impressionClient.get("", new HashMap<>());
 
-            impressionClient.get("", new HashMap<>());
-
-        } catch (APIIOException ignored) {
-            // TODO: ignore?
-            if (BuildConfig.DEBUG) {
-                ignored.printStackTrace();
+            } catch (APIIOException ignored) {
+                // TODO: ignore?
+                if (BuildConfig.DEBUG) {
+                    ignored.printStackTrace();
+                }
             }
-        }
-
+        })).start();
     }
 
     public void sendClick(Activity context, Ad ad) {
