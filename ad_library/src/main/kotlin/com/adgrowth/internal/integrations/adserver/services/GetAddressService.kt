@@ -2,27 +2,27 @@ package com.adgrowth.internal.integrations.adserver.services
 
 import com.adgrowth.adserver.entities.ClientAddress
 import com.adgrowth.adserver.exceptions.AdRequestException
-import com.adgrowth.internal.integrations.adserver.http.HttpClient
-import com.adgrowth.internal.integrations.adserver.exceptions.APIIOException
+import com.adgrowth.internal.http.HttpClient
+import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
+import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAddressService as IGetAddressService
 import org.json.JSONException
 import org.json.JSONObject
 
 
-class GetAddressService {
+class GetAddressService : IGetAddressService() {
     private val httpClient: HttpClient = HttpClient()
 
     @Throws(AdRequestException::class)
-    fun run(latitude: Double?, longitude: Double?): ClientAddress {
+    override fun run(latitude: Double?, longitude: Double?): ClientAddress {
         val params = HashMap<String, Any>()
 
+        params["latitude"] = ""
+        params["longitude"] = ""
 
         if (latitude != null && longitude != null && latitude != 0.0 && longitude != 0.0) {
             params["latitude"] = latitude
             params["longitude"] = longitude
-        } else {
-            params["latitude"] = ""
-            params["longitude"] = ""
         }
 
         return try {
