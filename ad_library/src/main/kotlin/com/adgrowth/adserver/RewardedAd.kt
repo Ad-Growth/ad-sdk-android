@@ -5,11 +5,9 @@ import android.app.Activity
 import com.adgrowth.adserver.entities.RewardItem
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.integrations.RewardedManager
-
-import com.adgrowth.internal.interfaces.exceptions.ExceptionTypes
 import com.adgrowth.internal.interfaces.integrations.RewardedIntegration
 
-class RewardedAd(unitId: String) : RewardedIntegration.Listener, ExceptionTypes() {
+class RewardedAd(unitId: String) : RewardedIntegration.Listener {
     private lateinit var mContext: Activity
     private lateinit var mListener: Listener
     private var mAdManager: RewardedManager

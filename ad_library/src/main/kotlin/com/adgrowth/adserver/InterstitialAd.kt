@@ -3,11 +3,10 @@ package com.adgrowth.adserver
 import android.app.Activity
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.integrations.InterstitialManager
-import com.adgrowth.internal.interfaces.exceptions.ExceptionTypes
 import com.adgrowth.internal.interfaces.integrations.InterstitialIntegration
 
 
-class InterstitialAd(unitId: String) : InterstitialIntegration.Listener, ExceptionTypes() {
+class InterstitialAd(unitId: String) : InterstitialIntegration.Listener {
     private lateinit var mContext: Activity
     private lateinit var mListener: Listener
     private var mAdManager: InterstitialManager
