@@ -49,7 +49,7 @@ class HttpClient {
     inner class Response(connection: HttpURLConnection) {
         private var responseString: String? = null
         var message: String? = null
-        var statusCode = HTTPStatusCode.NO_CONTENT
+        var statusCode = HTTPStatusCode.NO_RESPONSE
         fun string(): String? {
             return responseString
         }
