@@ -1,20 +1,24 @@
 package com.adgrowth.internal.integrations.adserver.services
 
 import com.adgrowth.adserver.exceptions.AdRequestException
-import com.adgrowth.internal.integrations.adserver.http.HttpClient
+import com.adgrowth.internal.http.HttpClient
 import com.adgrowth.internal.integrations.adserver.entities.AppMetaData
-import com.adgrowth.internal.integrations.adserver.exceptions.APIIOException
+import com.adgrowth.internal.exceptions.APIIOException
+import com.adgrowth.internal.interfaces.managers.InitializationManager as IInitializationManager
 import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
+import org.json.JSONArray
+import org.json.JSONObject
+import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAppMetaService as IGetAppMetaService
 
-class GetAppMetaService {
+class GetAppMetaService(override val manager: IInitializationManager) : IGetAppMetaService(manager) {
 
     private val mHttpClient: HttpClient = HttpClient()
 
     @Throws(AdRequestException::class)
-    fun run(): AppMetaData {
-        return try {
-            val response = mHttpClient["/adserver/api/app_meta", null]
-            AppMetaData(response)
+    override fun run(): AppMetaData {
+        try {
+           val response = mHttpClient["/adserver/api/app_meta", null]
+           AppMetaData(response)
         } catch (e: APIIOException) {
             throw IOErrorHandler.handle(e)
         }

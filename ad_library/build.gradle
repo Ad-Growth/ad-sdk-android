@@ -5,21 +5,22 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def sdkVersion = "1.1.0-rc.0"
+
 android {
     namespace 'com.adgrowth.adserver'
-    compileSdk 28
+    compileSdk 34
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         minSdk 24
-        //noinspection ExpiredTargetSdkVersion
-        targetSdk 28
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         versionCode 2
-        versionName "1.0.2"
+        versionName sdkVersion
     }
 
     buildTypes {
@@ -28,35 +29,59 @@ android {
 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        buildTypes {
-            hml {
-                buildConfigField "String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"'
-            }
-            release {
-                buildConfigField "String", "API_ENDPOINT", '"https://apiad.adgrowth.com"'
-            }
-            debug {
-                matchingFallbacks = ['release']
-                buildConfigField "String", "API_ENDPOINT", '"https://apiad.adgrowth.com"'
-            }
+
+        hml {
+            buildConfigField("String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"')
+            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
+            buildConfigField("int", "TIME_TO_REWARD", "10")
         }
+        release {
+            buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
+            buildConfigField("int", "DEFAULT_AD_DURATION", "30")
+            buildConfigField("int", "TIME_TO_REWARD", "30")
+        }
+        debug {
+            matchingFallbacks = ['release']
+            buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
+            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
+            buildConfigField("int", "TIME_TO_REWARD", "10")
+        }
+
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+        freeCompilerArgs = ['-Xjvm-default=all']
+    }
 
 }
 
 
 dependencies {
     api 'com.github.bumptech.glide:glide:4.15.1'
-    api 'androidx.constraintlayout:constraintlayout:2.1.4'
-    api 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+
     api 'androidx.core:core-ktx:1.12.0'
-    api 'com.google.android.gms:play-services-ads-lite:22.4.0'
+
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+
+    api 'com.google.android.gms:play-services-ads-lite:22.5.0'
+    api 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+
+    api 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // testImplementation 'androidx.test:core-ktx:1.5.0'
+    // testImplementation 'androidx.test:monitor:1.6.1'
+    // testImplementation 'androidx.test.ext:junit-ktx:1.1.5'
+    // testImplementation 'junit:junit:4.13.2'
+    // testImplementation "org.mockito:mockito-core:3.+"
+    // androidTestImplementation "androidx.test.ext:junit:1.1.5"
+    // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
 afterEvaluate {
@@ -64,10 +89,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-
                 groupId = 'com.adgrowth'
                 artifactId = 'adserver'
-                version = "0.0.1"
+                version = sdkVersion
             }
         }
     }
