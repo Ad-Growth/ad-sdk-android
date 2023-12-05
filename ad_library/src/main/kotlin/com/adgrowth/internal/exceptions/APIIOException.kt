@@ -1,13 +1,14 @@
-package com.adgrowth.internal.integrations.adserver.exceptions
+package com.adgrowth.internal.exceptions
 
-import com.adgrowth.internal.integrations.adserver.http.HttpClient
+import com.adgrowth.internal.http.HTTPStatusCode
+import com.adgrowth.internal.http.HttpClient
 import org.json.JSONException
 import org.json.JSONObject
 
 class APIIOException : Exception {
     override var message: String?
         private set
-    var body: JSONObject? = null
+    var body: JSONObject = JSONObject()
         private set
     var statusCode: Int
         private set
@@ -18,7 +19,7 @@ class APIIOException : Exception {
 
         try {
             body = response.json()
-            if (body != null && body!!.has("message")) message = body!!["message"] as String
+            if (body.has("message")) message = body["message"] as String
         } catch (ignored: JSONException) {
         }
     }
