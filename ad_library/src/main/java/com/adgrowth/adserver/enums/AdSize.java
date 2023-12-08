@@ -1,6 +1,6 @@
 package com.adgrowth.adserver.enums;
 
-public enum AdSizeType {
+public enum AdSize {
     BANNER("BANNER"),
     LARGE_BANNER("LARGE_BANNER"),
     MEDIUM_RECTANGLE("MEDIUM_RECTANGLE"),
@@ -8,7 +8,7 @@ public enum AdSizeType {
     LEADERBOARD("LEADERBOARD");
     private final String name;
 
-    AdSizeType(String s) {
+    AdSize(String s) {
         name = s;
     }
 

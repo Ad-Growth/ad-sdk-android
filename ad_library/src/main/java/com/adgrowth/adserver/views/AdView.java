@@ -19,13 +19,12 @@ import androidx.annotation.Nullable;
 
 import com.adgrowth.adserver.R;
 import com.adgrowth.adserver.enums.AdOrientation;
-import com.adgrowth.adserver.enums.AdSizeType;
+import com.adgrowth.adserver.enums.AdSize;
 import com.adgrowth.adserver.exceptions.AdRequestException;
 import com.adgrowth.adserver.interfaces.BaseAdListener;
 import com.adgrowth.internal.entities.Ad;
 import com.adgrowth.internal.enums.AdMediaType;
 import com.adgrowth.internal.enums.AdType;
-import com.adgrowth.internal.helpers.AdUriHelpers;
 import com.adgrowth.internal.helpers.FullScreenEventManager;
 import com.adgrowth.internal.http.AdRequest;
 import com.adgrowth.internal.interfaces.FullScreenListener;
@@ -54,7 +53,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
     protected Integer mTimeToRefresh = 30;
     private AdOrientation mOrientation;
     private String mUnitId;
-    private AdSizeType mSize;
+    private AdSize mSize;
 
     private final View.OnClickListener onAdClickListener = view -> {
         if (mAd == null) {
@@ -78,7 +77,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
 
     }
 
-    public AdView(Context context, String unitId, AdSizeType size, AdOrientation orientation) {
+    public AdView(Context context, String unitId, AdSize size, AdOrientation orientation) {
         super(context);
         this.mUnitId = unitId;
         this.mSize = size;
@@ -89,7 +88,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
     public AdView(Context context) {
         super(context);
         this.mUnitId = "";
-        this.mSize = AdSizeType.BANNER;
+        this.mSize = AdSize.BANNER;
         this.mOrientation = AdOrientation.LANDSCAPE;
         init();
     }
@@ -112,7 +111,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
         init();
     }
 
-    public AdSizeType getSize() {
+    public AdSize getSize() {
         return mSize;
     }
 
@@ -174,7 +173,7 @@ public class AdView extends ViewGroup implements Application.ActivityLifecycleCa
         TypedArray attributes = context.getTheme().obtainStyledAttributes(attrs, R.styleable.AdView, 0, 0);
 
         this.mOrientation = attributes.getInteger(R.styleable.AdView_orientation, 0) == 1 ? AdOrientation.PORTRAIT : AdOrientation.LANDSCAPE;
-        this.mSize = AdSizeType.values()[(attributes.getInteger(R.styleable.AdView_size, 0))];
+        this.mSize = AdSize.values()[(attributes.getInteger(R.styleable.AdView_size, 0))];
         this.mUnitId = attributes.getString(R.styleable.AdView_unit_id);
     }
 
