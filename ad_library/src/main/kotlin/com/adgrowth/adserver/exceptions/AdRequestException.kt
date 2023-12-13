@@ -13,5 +13,8 @@ class AdRequestException(val code: String) : Exception() {
         const val SDK_NOT_INITIALIZED = "sdk_not_initialized"
         const val NO_AD_FOUND = "no_ad_found"
         const val ALREADY_LOADED = "already_loaded"
+        const val ALREADY_CONSUMED = "already_consumed"
+        const val NOT_READY = "not_ready"
+        const val ALREADY_SHOWING_FULL_SCREEN_AD = "already_showing_full_screen_ad"
     }
 }

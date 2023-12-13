@@ -2,64 +2,86 @@ package com.adgrowth.adserver
 
 import android.app.Activity
 import com.adgrowth.adserver.exceptions.AdRequestException
-import com.adgrowth.internal.integrations.adserver.AdServerInterstitial
-import com.adgrowth.internal.interfaces.integration.InterstitialIntegration
+import com.adgrowth.internal.integrations.InterstitialManager
+import com.adgrowth.internal.interfaces.integrations.InterstitialIntegration
 
 
-class InterstitialAd(unitId: String) :    AdServerInterstitial.Listener {
+class InterstitialAd(unitId: String) : InterstitialIntegration.Listener {
+    private lateinit var mContext: Activity
     private lateinit var mListener: Listener
-    private var mAd: AdServerInterstitial
+    private var mAdManager: InterstitialManager
 
     init {
-        mAd = AdServerInterstitial(unitId)
-        mAd.setListener(this)
+        mAdManager = InterstitialManager(unitId)
+        mAdManager.listener = this
     }
 
     fun setListener(listener: Listener) {
-        this.mListener = listener;
+        this.mListener = listener
     }
 
     fun show(context: Activity) {
-        mAd.show(context);
+        mContext = context
+        mAdManager.show(context)
     }
 
     fun load(context: Activity) {
-        mAd.load(context)
+        mContext = context
+        mAdManager.load(context)
     }
 
     fun isLoaded(): Boolean {
-        return mAd.isLoaded()
+        return mAdManager.isLoaded
     }
 
     fun isFailed(): Boolean {
-        return mAd.isFailed()
+        return mAdManager.isFailed
     }
 
 
     override fun onDismissed() {
-        mListener.onDismissed()
+        mContext.runOnUiThread { mListener.onDismissed() }
     }
 
-    override fun onLoad(ad: AdServerInterstitial) {
-        mListener.onLoad(this)
+    override fun onLoad(ad: InterstitialIntegration) {
+        mContext.runOnUiThread { mListener.onLoad(this) }
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        mListener.onFailedToLoad(exception)
+        mContext.runOnUiThread { mListener.onFailedToLoad(exception) }
     }
 
     override fun onClicked() {
-        mListener.onClicked()
+        mContext.runOnUiThread { mListener.onClicked() }
     }
 
     override fun onFailedToShow(code: String?) {
-        mListener.onFailedToShow(code)
+        mContext.runOnUiThread { mListener.onFailedToShow(code) }
     }
 
     override fun onImpression() {
-        mListener.onImpression()
+        mContext.runOnUiThread { mListener.onImpression() }
     }
 
-    interface Listener : InterstitialIntegration.Listener<InterstitialAd>
+    interface Listener {
+        fun onLoad(ad: InterstitialAd)
+        fun onFailedToLoad(exception: AdRequestException?)
+
+        @JvmDefault
+        fun onDismissed() {
+        }
+
+        @JvmDefault
+        fun onClicked() {
+        }
+
+        @JvmDefault
+        fun onFailedToShow(code: String?) {
+        }
+
+        @JvmDefault
+        fun onImpression() {
+        }
+    }
 
 }

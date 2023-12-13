@@ -5,22 +5,13 @@ import com.adgrowth.adserver.entities.ClientProfile
 import com.adgrowth.adserver.exceptions.SDKInitException
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager.notifyProfileChanged
 import com.adgrowth.internal.integrations.adserver.helpers.AdvertisingIdManager.getAdvertisingId
-import com.adgrowth.internal.integrations.SDKInitializer
+import com.adgrowth.internal.integrations.InitializationManager
 
 object AdServer {
-    @JvmStatic
-    var clientKey: String = ""
-        private set
-
-    @JvmStatic
-    var adId: String = ""
-        private set
-
 
     @JvmStatic
     val isInitialized: Boolean
-        get() = SDKInitializer.isInitialized
-
+        get() = InitializationManager.isInitialized
 
     @JvmStatic
     var clientProfile = ClientProfile()
@@ -42,22 +33,16 @@ object AdServer {
         startSDK(context, clientKey, listener)
     }
 
-
+    @JvmStatic
     private fun startSDK(context: Activity, clientKey: String, listener: Listener) {
 
-        if (SDKInitializer.isInitialized) {
+        if (InitializationManager.isInitialized) {
             listener.onFailed(SDKInitException(SDKInitException.ALREADY_INITIALIZED))
             return
         }
-        if (clientKey == AdServer.clientKey) {
-            listener.onInit()
-            return
-        }
-        AdServer.clientKey = clientKey
 
-        Thread { adId = getAdvertisingId(context) }.start()
-
-        SDKInitializer(context, AdServer.clientKey, listener)
+        Thread { InitializationManager.ADVERTISING_ID = getAdvertisingId(context) }.start()
+        Thread { InitializationManager(context, clientKey, clientProfile, listener) }.start()
     }
 
 
