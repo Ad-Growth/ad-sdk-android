@@ -7,7 +7,11 @@ import com.google.android.gms.ads.identifier.AdvertisingIdClient
 object AdvertisingIdManager {
     @JvmStatic
     fun getAdvertisingId(context: Context): String {
-        val advertisingIdInfoListenableFuture = AdvertisingIdClient.getAdvertisingIdInfo(context)
-        return advertisingIdInfoListenableFuture.id ?: ""
+        try {
+            val advertisingIdInfoListenableFuture =
+                AdvertisingIdClient.getAdvertisingIdInfo(context)
+            return advertisingIdInfoListenableFuture.id ?: ""
+        } catch (ignored: Exception) {}
+        return ""
     }
 }
