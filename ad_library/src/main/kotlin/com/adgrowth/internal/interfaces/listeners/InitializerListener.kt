@@ -1,6 +1,8 @@
 package com.adgrowth.internal.interfaces.listeners
 
-interface InitializerListener<T, E> {
+import com.adgrowth.adserver.exceptions.SDKInitException
+
+interface InitializerListener<T> {
     fun onInit(initializer: T)
-    fun onFailed(e: E)
+    fun onFailed(e: SDKInitException, initializer: T)
 }
