@@ -14,7 +14,7 @@ import java.util.*
 import kotlin.math.ceil
 
 @SuppressLint("ViewConstructor")
-class AdPlayer(context: Activity?, url: String?, playerListener: Listener?) : TextureView(context),
+class AdPlayer(context: Activity, url: String?, playerListener: Listener?) : TextureView(context),
     TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener {
 

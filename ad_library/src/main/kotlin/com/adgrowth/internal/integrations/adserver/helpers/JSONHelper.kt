@@ -1,10 +1,11 @@
 package com.adgrowth.internal.integrations.adserver.helpers
 
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
 object JSONHelper {
-    private fun getString(json: JSONObject, field: String, defaultValue: String): String {
+    private fun getString(json: JSONObject, field: String, defaultValue: String?): String? {
         return try {
             val mediaUrl = json.getString(field)
             mediaUrl ?: defaultValue
@@ -13,12 +14,12 @@ object JSONHelper {
         }
     }
 
-    fun safeGetString(json: JSONObject, field: String, defaultValue: String): String {
+    fun safeGetString(json: JSONObject, field: String, defaultValue: String?): String? {
         return getString(json, field, defaultValue)
     }
 
     fun safeGetString(json: JSONObject, field: String): String {
-        return getString(json, field, "")
+        return getString(json, field, "")!!
     }
 
     fun safeGetObject(json: JSONObject, field: String): JSONObject {
@@ -29,9 +30,25 @@ object JSONHelper {
         return getObject(json, field, defaultValue)
     }
 
+    fun safeGetArray(json: JSONObject, field: String): JSONArray {
+        return getArray(json, field, JSONArray())
+    }
+
+    fun safeGetArray(json: JSONObject, field: String, defaultValue: JSONArray): JSONArray {
+        return getArray(json, field, defaultValue)
+    }
+
     private fun getObject(json: JSONObject, field: String, defaultValue: JSONObject): JSONObject {
         return try {
             json.getJSONObject(field)
+        } catch (e: JSONException) {
+            defaultValue
+        }
+    }
+
+    private fun getArray(json: JSONObject, field: String, defaultValue: JSONArray): JSONArray {
+        return try {
+            json.getJSONArray(field)
         } catch (e: JSONException) {
             defaultValue
         }

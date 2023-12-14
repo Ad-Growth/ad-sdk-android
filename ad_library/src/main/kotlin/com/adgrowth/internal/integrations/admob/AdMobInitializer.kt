@@ -1,58 +1,64 @@
 package com.adgrowth.internal.integrations.admob
 
-import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import com.adgrowth.internal.interfaces.integration.InitializerIntegration
-import com.google.android.gms.ads.MobileAds
+import com.adgrowth.internal.exceptions.APIIOException
+import com.adgrowth.internal.http.HTTPStatusCode
+
+import com.adgrowth.internal.interfaces.managers.InitializationManager as IInitializationManager
+import com.adgrowth.internal.interfaces.integrations.InitializerIntegration as IInitializerIntegration
+import com.adgrowth.internal.integrations.admob.services.AdMobInitializeService
+import com.adgrowth.internal.integrations.admob.services.interfaces.AdMobInitializeService as IAdMobInitializeService
 
 
-class AdMobInitializer(context: Context, override val clientKey: String?) :
-    InitializerIntegration<AdMobInitializer, AdMobInitializer.Listener>(context, clientKey) {
+class AdMobInitializer(
+    override val manager: IInitializationManager,
+    private val appId: String?,
+    private val initializeService: IAdMobInitializeService
+) : IInitializerIntegration(manager) {
 
     private var isInitialized = false
-    var isFailed = false
-        private set
 
-    override fun initialize(listener: Listener) {
-        mListener = listener
+    override fun initialize(): IInitializerIntegration {
 
-        val app: ApplicationInfo = context.packageManager.getApplicationInfo(
-            context.packageName, PackageManager.GET_META_DATA
+
+        val app: ApplicationInfo = manager.context.packageManager.getApplicationInfo(
+            manager.context.packageName, PackageManager.GET_META_DATA
         )
-
 
         val adMobAppId = app.metaData.getString(ADMOB_APPLICATION_ID)
 
         if (adMobAppId != null) {
-            // TODO: uncomment when api return the admob_app_id
-            if (clientKey != adMobAppId) {
-                listener.onFailed(INVALID_META_APPLICATION_ID)
-                isFailed = true
-                return
+            if (appId != adMobAppId) {
+                throw APIIOException(HTTPStatusCode.NO_CONTENT, INVALID_META_APPLICATION_ID)
             }
 
-
-            MobileAds.initialize(this.context) {
-                isInitialized = true;
-                this@AdMobInitializer.mListener?.onInit(this@AdMobInitializer)
-            }
+            initializeService.run()
+            isInitialized = true
+            return this
         } else {
-            isFailed = true
-            listener.onFailed(META_APPLICATION_ID_NOT_PROVIDED)
+            throw APIIOException(HTTPStatusCode.NO_CONTENT, META_APPLICATION_ID_NOT_PROVIDED)
         }
-
     }
 
+    class Builder : IInitializationManager.Builder {
+        override fun build(manager: IInitializationManager): IInitializerIntegration {
+            return AdMobInitializer(
+                manager, manager.appMetadata.adMob!!.appId, makeAdMobInitializeService(manager)
+            )
+        }
+
+        private fun makeAdMobInitializeService(manager: IInitializationManager): IAdMobInitializeService {
+            return AdMobInitializeService(manager)
+        }
+    }
 
     companion object {
         const val META_APPLICATION_ID_NOT_PROVIDED: String = "meta_app_id_not_provided"
-
         const val INVALID_META_APPLICATION_ID: String = "google_admob_app_id_not_provided"
         private const val ADMOB_APPLICATION_ID = "com.google.android.gms.ads.APPLICATION_ID"
-//        private const val ADMOB_TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
+        const val INTEGRATION_TYPE = "admob"
     }
 
-    interface Listener : InitializerIntegration.Listener<AdMobInitializer, String>
 
 }
