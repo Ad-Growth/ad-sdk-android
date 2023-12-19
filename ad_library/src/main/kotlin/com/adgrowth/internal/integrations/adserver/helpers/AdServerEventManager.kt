@@ -1,5 +1,7 @@
 package com.adgrowth.internal.integrations.adserver.helpers
 
+import android.app.Activity
+import android.content.Context
 import com.adgrowth.adserver.entities.ClientProfile
 
 /**
@@ -14,6 +16,10 @@ object AdServerEventManager {
     @JvmStatic
     val showPermission: Boolean
         get() = adCurrentlyShown == null
+
+    @JvmStatic
+    var sdkInitialized: Boolean = false
+        private set
 
     @JvmStatic
     fun registerFullScreenListener(listener: FullScreenListener) {
@@ -71,10 +77,16 @@ object AdServerEventManager {
 
     @JvmStatic
     fun notifySDKInitialized() {
+        sdkInitialized = true
         for (listener in initializeListeners) {
             listener.onSDKInit()
         }
     }
+
+    fun isSameActivity(context: Context, activity: Activity): Boolean {
+        return context == activity
+    }
+
 
     interface FullScreenListener {
         fun onFullScreenShown(instanceHash: Int);

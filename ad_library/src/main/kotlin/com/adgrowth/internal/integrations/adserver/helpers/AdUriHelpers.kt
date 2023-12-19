@@ -3,7 +3,7 @@ package com.adgrowth.internal.integrations.adserver.helpers
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import com.adgrowth.adserver.AdServer
+import com.adgrowth.internal.integrations.InitializationManager
 import java.util.*
 
 object AdUriHelpers {
@@ -17,7 +17,7 @@ object AdUriHelpers {
     @JvmStatic
     fun replaceAdCallbackParams(context: Activity, uri: String, ipAddress: String?): String {
         val clickId = UUID.randomUUID().toString()
-        var adId = AdServer.adId
+        val adId = InitializationManager.ADVERTISING_ID
         val siteId = context.packageName
 
         return uri

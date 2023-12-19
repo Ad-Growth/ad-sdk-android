@@ -1,10 +1,35 @@
 package com.adgrowth.internal.integrations.adserver.entities
 
+import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
 import org.json.JSONObject
 
-data class AppMetaData(private val json: JSONObject) {
-    val adMobAppId: String? = JSONHelper.safeGetString(json, "admob_app_id")
-    val unityAppId: String? = JSONHelper.safeGetString(json, "unity_app_id")
-    val adColonyAppId: String? = JSONHelper.safeGetString(json, "adcolony_app_id")
+data class AppMetaData(val json: JSONObject) {
+    val ipAddress: String = JSONHelper.safeGetString(json, "ip_address")
+    var adMob: Integration? = null
+    var unity: Integration? = null
+    var adColony: Integration? = null
+
+    init {
+        val integrations = JSONHelper.safeGetArray(json, "integrations")
+        (0 until integrations.length()).forEach {
+            val integration = integrations.getJSONObject(it)
+
+            when (integration.getString("type")) {
+                AdMobInitializer.INTEGRATION_TYPE -> adMob = Integration(integration)
+                // UnityInitializer.INTEGRATION_TYPE -> unity = Integration(integration)
+                // AdColonyInitializer.INTEGRATION_TYPE -> adColony = Integration(integration)
+            }
+        }
+    }
+
+    data class Integration(
+        val json: JSONObject
+    ) {
+        val appId: String? = JSONHelper.safeGetString(json, "app_id", null)
+        val interstitialUnitId: String? =
+            JSONHelper.safeGetString(json, "interstitial_unit_id", null)
+        val rewardedUnitId: String? = JSONHelper.safeGetString(json, "rewarded_unit_id", null)
+        val bannerUnitId: String? = JSONHelper.safeGetString(json, "banner_unit_id", null)
+    }
 }
