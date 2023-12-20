@@ -66,11 +66,11 @@ class AdMobAdView(
     }
 
     override fun resumeAd() {
-        mAd?.pause();
+        mAd?.resume()
     }
 
     override fun pauseAd() {
-        mAd?.resume();
+        mAd?.pause()
     }
 
     override fun placeIn(parent: ViewGroup) {
