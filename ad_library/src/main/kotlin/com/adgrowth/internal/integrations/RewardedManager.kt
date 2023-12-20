@@ -36,7 +36,7 @@ class RewardedManager(
             }
         }
 
-     init {
+    init {
         integrations = InitializationManager.availableIntegrations.map {
             when (it) {
                 // AdColonyInitializer::class.simpleName -> AdColonyRewarded.Builder()
@@ -53,10 +53,15 @@ class RewardedManager(
             throw AdRequestException(AdRequestException.SDK_NOT_INITIALIZED)
         }
         this.context = context
+
         Thread {
             while (mAd == null && builder != null) {
+
+                this.isLoaded = false
+
                 try {
                     mAd = builder!!.build(this).load(this)
+                    isLoaded = true
                     listener.onLoad(mAd!!)
                     break
                 } catch (e: APIIOException) {
@@ -96,7 +101,7 @@ class RewardedManager(
             return
         }
         this.context = context
-        mAd!!.show(this)
+        mAd?.show(this)
     }
 
     interface Builder {

@@ -23,6 +23,10 @@ class RewardedAd(unitId: String) : RewardedIntegration.Listener {
 
     fun show(context: Activity) {
         mContext = context;
+        if (!mAdManager.isLoaded) {
+            mListener.onFailedToShow(AdRequestException.NOT_READY)
+            return
+        }
         mAdManager.show(context);
     }
 

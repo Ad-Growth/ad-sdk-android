@@ -120,7 +120,7 @@ class AdViewManager(
 
         context.runOnUiThread {
             stopRefreshTimer()
-            mAd!!.placeIn(parent)
+            mAd?.placeIn(parent)
             mCurrentRefreshTime = 0
             startRefreshTimer()
         }
