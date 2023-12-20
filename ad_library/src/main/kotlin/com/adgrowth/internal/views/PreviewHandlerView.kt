@@ -15,7 +15,6 @@ import com.adgrowth.internal.integrations.InitializationManager
 
 abstract class PreviewHandlerView : CenteredChildrenView {
     private var mPreviewText: TextView? = null
-    private lateinit var mPreviewContainer: LinearLayout
     protected lateinit var context: Activity
     var unitId: String = ""
     var size: AdSize = AdSize.BANNER
@@ -23,25 +22,25 @@ abstract class PreviewHandlerView : CenteredChildrenView {
 
     constructor(context: Context) : super(context)
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         getAdAttributes(context, attrs)
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
         context, attrs, defStyleAttr
     ) {
         getAdAttributes(context, attrs)
     }
 
     constructor(
-        context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
+        context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int
     ) : super(context, attrs, defStyleAttr, defStyleRes) {
         getAdAttributes(context, attrs)
     }
 
     internal abstract fun load()
 
-    private fun getAdAttributes(context: Context, attrs: AttributeSet?) {
+    private fun getAdAttributes(context: Context, attrs: AttributeSet) {
 
         // this prevent preview problems on Android Studio
         val attributes = if (isInEditMode) {
@@ -62,12 +61,12 @@ abstract class PreviewHandlerView : CenteredChildrenView {
             setBackgroundColor(resources.getColor(R.color.background_gray, null))
             attributes.recycle()
 
-            if (unitId == "") return setPreviewError("Missing unit_id", context)
+            if (unitId.isEmpty()) return setPreviewError( context)
             // stop here for avoid preview errors
             return
         }
 
-        if (unitId == "")
+        if (unitId.isEmpty())
             throw IllegalArgumentException("You must provide an unit_id for AdView")
 
 
@@ -78,8 +77,8 @@ abstract class PreviewHandlerView : CenteredChildrenView {
         }
     }
 
-    private fun setPreviewError(text: String, context: Context) {
-        setPreviewText(text, context)
+    private fun setPreviewError(context: Context) {
+        setPreviewText("Missing unit_id", context)
         mPreviewText!!.background = resources.getDrawable(R.drawable.danger_border_square, null)
         mPreviewText!!.setTextColor(resources.getColor(R.color.white, null))
     }
