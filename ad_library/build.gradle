@@ -35,6 +35,11 @@ android {
             buildConfigField("int", "DEFAULT_AD_DURATION", "10")
             buildConfigField("int", "TIME_TO_REWARD", "10")
         }
+        dev {
+            buildConfigField("String", "API_ENDPOINT", '"https://apiad-dev.adgrowth.com"')
+            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
+            buildConfigField("int", "TIME_TO_REWARD", "10")
+        }
         release {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
             buildConfigField("int", "DEFAULT_AD_DURATION", "30")
