@@ -28,16 +28,16 @@ class GetAdService(override val manager: AdManager<*, *>) : IGetAdServerAdServic
 
         val clientAddress = profile.clientAddress
 
-        params["city"] = clientAddress.city
-        params["state"] = clientAddress.state
-        params["country"] = clientAddress.country
+        params["city"] = clientAddress.city ?: ""
+        params["state"] = clientAddress.state ?: ""
+        params["country"] = clientAddress.country ?: ""
 
         val response = mHttpClient["/adserver/api/adverts/search", params]
 
         if (params.containsKey("orientation")) {
             response.getJSONObject("advert").put("orientation", params["orientation"])
         }
-        
+
         val ad = Ad(response)
 
         manager.adId = ad.id

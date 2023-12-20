@@ -9,7 +9,6 @@ import com.adgrowth.internal.interfaces.integrations.InitializerIntegration
 
 abstract class InitializationManager(
     open val context: Activity,
-    open val clientKey: String,
     open val clientProfile: ClientProfile,
     open var listener: AdServer.Listener
 ) {

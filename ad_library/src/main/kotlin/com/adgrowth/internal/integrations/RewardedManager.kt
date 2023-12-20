@@ -32,7 +32,10 @@ class RewardedManager(
                 // is AdColonyRewarded.Builder -> SDKInitializer.appMetadata.adColony!!.rewardedUnitId!!
                 // is UnityRewarded.Builder -> SDKInitializer.appMetadata.unity!!.rewardedUnitId!!
                 is AdMobRewarded.Builder -> InitializationManager.APP_META_DATA.adMob!!.rewardedUnitId!!
-                else -> return mUnitId
+                else -> {
+                    if (InitializationManager.APP_META_DATA.isDevKey) return AdServerRewarded.TEST_UNIT_ID
+                    return mUnitId
+                }
             }
         }
 

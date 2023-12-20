@@ -57,8 +57,6 @@ class AdMobInitializer(
         const val META_APPLICATION_ID_NOT_PROVIDED: String = "meta_app_id_not_provided"
         const val INVALID_META_APPLICATION_ID: String = "google_admob_app_id_not_provided"
         private const val ADMOB_APPLICATION_ID = "com.google.android.gms.ads.APPLICATION_ID"
-        const val INTEGRATION_TYPE = "admob"
+        const val INTEGRATION_TYPE = "AD_MOB"
     }
-
-
 }

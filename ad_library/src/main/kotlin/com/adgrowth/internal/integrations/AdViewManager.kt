@@ -12,6 +12,7 @@ import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.admob.AdMobAdView
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.AdServerAdView
+import com.adgrowth.internal.integrations.adserver.AdServerInterstitial
 
 import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
@@ -42,7 +43,10 @@ class AdViewManager(
                 // is AdColonyAdView.Builder -> SDKInitializer.appMetadata.adColony!!.bannerUnitId!!
                 // is UnityAdView.Builder -> SDKInitializer.appMetadata.unity!!.bannerUnitId!!
                 is AdMobAdView.Builder -> InitializationManager.APP_META_DATA.adMob!!.bannerUnitId!!
-                else -> return mUnitId
+                else -> {
+                    if (InitializationManager.APP_META_DATA.isDevKey) return AdServerAdView.TEST_UNIT_ID
+                    return mUnitId
+                }
             }
         }
 
@@ -77,7 +81,7 @@ class AdViewManager(
                     listener.onLoad(mAd!!)
                     break
                 } catch (e: APIIOException) {
-                    if (e.statusCode == HTTPStatusCode.NOT_FOUND && e.message!!.contains("No ads found")) {
+                    if (e.statusCode == HTTPStatusCode.NOT_FOUND) {
 
                         val meta = JSONHelper.safeGetObject(e.body, "meta")
 

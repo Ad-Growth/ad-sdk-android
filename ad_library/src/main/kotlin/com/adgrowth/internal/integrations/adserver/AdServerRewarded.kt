@@ -28,7 +28,7 @@ class AdServerRewarded(
     }
 
     override fun load(manager: RewardedManager): RewardedIntegration {
-        mLoadFuture  = CompletableFuture()
+        mLoadFuture = CompletableFuture()
         mListener = manager.listener
         mContext = manager.context
         mFailedToLoad = false
@@ -102,6 +102,7 @@ class AdServerRewarded(
     }
 
     companion object {
+        const val TEST_UNIT_ID: String = "rewarded"
         private const val TIME_TO_REWARD = BuildConfig.TIME_TO_REWARD
         private const val TIME_TO_SHOW_TAP_TO_CLOSE = -3
     }

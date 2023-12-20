@@ -16,7 +16,7 @@ class AdServerInterstitial(
     FullScreenAd<InterstitialIntegration, InterstitialIntegration.Listener>(sendAdEventService) {
 
     override fun load(manager: InterstitialManager): InterstitialIntegration {
-        mLoadFuture  = CompletableFuture()
+        mLoadFuture = CompletableFuture()
         mListener = manager.listener
         mContext = manager.context
         mFailedToLoad = false
@@ -58,9 +58,7 @@ class AdServerInterstitial(
                 makeGetAdService(manager), makeSendAdEventService(manager)
             )
         }
-    }
 
-    companion object {
         private fun makeGetAdService(manager: InterstitialManager): IGetAdService {
             return GetAdService(manager)
         }
@@ -68,5 +66,9 @@ class AdServerInterstitial(
         private fun makeSendAdEventService(manager: InterstitialManager): ISendAdEventService {
             return SendAdEventService(manager)
         }
+    }
+
+    companion object {
+        const val TEST_UNIT_ID: String = "interstitial"
     }
 }

@@ -28,7 +28,10 @@ class InterstitialManager(
                 // is AdColonyInterstitial.Builder -> SDKInitializer.appMetadata.adColony!!.interstitialUnitId!!
                 // is UnityInterstitial.Builder -> SDKInitializer.appMetadata.unity!!.interstitialUnitId!!
                 is AdMobInterstitial.Builder -> InitializationManager.APP_META_DATA.adMob!!.interstitialUnitId!!
-                else -> return mUnitId
+                else -> {
+                    if (InitializationManager.APP_META_DATA.isDevKey) return AdServerInterstitial.TEST_UNIT_ID
+                    return mUnitId
+                }
             }
         }
 

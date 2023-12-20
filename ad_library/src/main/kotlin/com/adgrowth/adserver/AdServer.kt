@@ -21,20 +21,20 @@ object AdServer {
         }
 
     @JvmStatic
-    fun initialize(context: Activity, clientKey: String, listener: Listener) {
-        startSDK(context, clientKey, listener)
+    fun initialize(context: Activity, listener: Listener) {
+        startSDK(context, listener)
     }
 
     @JvmStatic
     fun initialize(
-        context: Activity, clientKey: String, profile: ClientProfile, listener: Listener
+        context: Activity, profile: ClientProfile, listener: Listener
     ) {
         clientProfile = profile
-        startSDK(context, clientKey, listener)
+        startSDK(context, listener)
     }
 
     @JvmStatic
-    private fun startSDK(context: Activity, clientKey: String, listener: Listener) {
+    private fun startSDK(context: Activity, listener: Listener) {
 
         if (InitializationManager.isInitialized) {
             listener.onFailed(SDKInitException(SDKInitException.ALREADY_INITIALIZED))
@@ -42,7 +42,7 @@ object AdServer {
         }
 
         Thread { InitializationManager.ADVERTISING_ID = getAdvertisingId(context) }.start()
-        Thread { InitializationManager(context, clientKey, clientProfile, listener) }.start()
+        Thread { InitializationManager(context, clientProfile, listener) }.start()
     }
 
 

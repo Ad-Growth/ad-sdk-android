@@ -6,6 +6,7 @@ import org.json.JSONObject
 
 data class AppMetaData(val json: JSONObject) {
     val ipAddress: String = JSONHelper.safeGetString(json, "ip_address")
+    val isDevKey: Boolean = JSONHelper.safeGetBoolean(json, "is_dev_key", false)
     var adMob: Integration? = null
     var unity: Integration? = null
     var adColony: Integration? = null
