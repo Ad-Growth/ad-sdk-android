@@ -1,5 +1,6 @@
 package com.adgrowth.internal.integrations.adserver.entities
 
+import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.adserver.entities.RewardItem
 import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.internal.integrations.adserver.enums.AdMediaType
@@ -10,7 +11,8 @@ import org.json.JSONObject
 class Ad(json: JSONObject) {
     private val mRewardValue: Int
     private val mRewardItem: String
-    private val impressionUrl: String
+    var impressionUrl: String
+        private set
     val refreshRate: Int?
     val id: String
     val ipAddress: String
@@ -37,7 +39,7 @@ class Ad(json: JSONObject) {
         orientation = AdOrientation.valueOf(JSONHelper.safeGetString(advert, "orientation"))
 
         // meta
-        mRewardItem = JSONHelper.safeGetString(meta, "reward_item", DEFAULT_REWARD_ITEM)
+        mRewardItem = JSONHelper.safeGetString(meta, "reward_item", DEFAULT_REWARD_ITEM)!!
         mRewardValue = JSONHelper.safeGetInt(meta, "reward_value", DEFAULT_REWARD_VALUE)!!
         refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)
         ipAddress = JSONHelper.safeGetString(meta, "ip_address")
@@ -68,14 +70,11 @@ class Ad(json: JSONObject) {
 
     companion object {
         const val DEFAULT_REWARD_ITEM = "reward_item"
-        const val ALREADY_CONSUMED = "already_consumed"
-        const val NOT_READY = "not_ready"
-        const val ALREADY_SHOWING_FULL_SCREEN_AD = "already_showing_full_screen_ad"
 
         @JvmField
-        val AUTO_REFRESH_RATE: Int? = null
+        val AUTO_REFRESH_RATE = null
         const val DISABLED_REFRESH_RATE = 0
-        const val DEFAULT_AD_DURATION = 30
+        const val DEFAULT_AD_DURATION = BuildConfig.DEFAULT_AD_DURATION
         const val DEFAULT_REWARD_VALUE = 1
     }
 }

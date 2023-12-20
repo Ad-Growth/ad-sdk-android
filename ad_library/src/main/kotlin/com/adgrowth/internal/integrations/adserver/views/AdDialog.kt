@@ -1,6 +1,5 @@
 package com.adgrowth.internal.integrations.adserver.views
 
-import android.R
 import android.app.Dialog
 import android.content.Context
 import android.view.Gravity
@@ -12,7 +11,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import java.util.*
 
-class AdDialog(context: Context) : Dialog(context, R.style.Theme_Translucent_NoTitleBar) {
+class AdDialog(context: Context) : Dialog(context, android.R.style.Theme_Translucent_NoTitleBar) {
     private val mProgressBar: ProgressBar
     private val mCloseBtn: ImageView
     private val mCloseTextView: TextView
@@ -21,8 +20,8 @@ class AdDialog(context: Context) : Dialog(context, R.style.Theme_Translucent_NoT
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(com.adgrowth.adserver.R.layout.activity_fit_content)
         setCancelable(false)
-        Objects.requireNonNull(window).setGravity(Gravity.CENTER)
-        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        window?.setGravity(Gravity.CENTER)
+        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         mCloseTextView = findViewById<View>(com.adgrowth.adserver.R.id.close_text_view) as TextView
         mCloseBtn = findViewById<View>(com.adgrowth.adserver.R.id.close_btn) as ImageView
         mCloseBtn.isEnabled = false

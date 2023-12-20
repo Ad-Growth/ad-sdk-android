@@ -1,102 +1,142 @@
 package com.adgrowth.adserver.views
 
 import android.app.Activity
+import android.content.Context
 import android.util.AttributeSet
-
 import com.adgrowth.adserver.enums.AdOrientation
-import com.adgrowth.adserver.enums.AdSizeType
+import com.adgrowth.adserver.enums.AdSize
 import com.adgrowth.adserver.exceptions.AdRequestException
-import com.adgrowth.internal.integrations.adserver.AdServerAdView
-import com.adgrowth.internal.integrations.adserver.views.FillParentViewGroup
-import com.adgrowth.internal.interfaces.integration.AdViewIntegration
+import com.adgrowth.internal.integrations.AdViewManager
+import com.adgrowth.internal.integrations.InitializationManager
+import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
+import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
+import com.adgrowth.internal.views.PreviewHandlerView
 
-class AdView : FillParentViewGroup, AdViewIntegration<AdView, AdView.Listener>,
-    AdViewIntegration.Listener<AdServerAdView> {
-    private val mAd: AdServerAdView
-    private var listener: Listener? = null
+class AdView : PreviewHandlerView, AdViewIntegration.Listener,
+    AdServerEventManager.SdkInitializedListener {
+    var isLoaded = false
+    var isFailed = false
+    private var mAdManager: AdViewManager? = null
+    private var mListener: Listener? = null
 
-    constructor(context: Activity) : super(context) {
-        mAd = AdServerAdView(context)
-        mAd.setListener(this)
-        addView(mAd)
-    }
+    constructor(context: Context) : super(context)
 
-    constructor(context: Activity, attrs: AttributeSet?) : super(context, attrs) {
-        mAd = AdServerAdView(context, attrs)
-        mAd.setListener(this)
-        addView(mAd)
-    }
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
-    constructor(context: Activity, attrs: AttributeSet?, defStyleAttr: Int) : super(
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context, attrs, defStyleAttr
-    ) {
-        mAd = AdServerAdView(context, attrs, defStyleAttr)
-        mAd.setListener(this)
-        addView(mAd)
-    }
+    )
 
     constructor(
-        context: Activity, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
-    ) : super(context, attrs, defStyleAttr, defStyleRes) {
-        mAd = AdServerAdView(context, attrs, defStyleAttr, defStyleRes)
-        mAd.setListener(this)
-        addView(mAd)
-    }
+        context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
+    ) : super(context, attrs, defStyleAttr, defStyleRes)
 
     constructor(
-        context: Activity, unitId: String, size: AdSizeType, orientation: AdOrientation
+        context: Context, unitId: String, size: AdSize, orientation: AdOrientation
     ) : super(context) {
-        mAd = AdServerAdView(context, unitId, size, orientation)
-        mAd.setListener(this)
-        addView(mAd)
+        this.context = context as Activity
+        this.unitId = unitId
+        this.size = size
+        this.orientation = orientation
+
+        if (InitializationManager.isInitialized) {
+            load()
+        }
+    }
+
+    init {
+        AdServerEventManager.registerSDKInitializedListener(this)
+    }
+
+    override fun load() {
+        mAdManager = AdViewManager(unitId)
+        mAdManager!!.listener = this
+        mAdManager!!.load(context, size, orientation)
+    }
+
+    override fun onSDKInit() {
+        load()
     }
 
 
-    interface Listener : AdViewIntegration.Listener<AdView>
-
-    override fun setListener(listener: Listener) {
-        this.listener = listener
+    fun setListener(listener: Listener) {
+        mListener = listener
     }
 
-    override fun getSize(): AdSizeType {
-        return mAd.getSize()
+
+    fun reload() {
+        if (mAdManager == null) {
+            context.runOnUiThread {
+                mListener?.onFailedToLoad(AdRequestException(AdRequestException.NOT_READY))
+                isFailed = true
+            }
+            return
+        }
+
+        mAdManager!!.reload(this)
     }
 
-    override fun getOrientation(): AdOrientation {
-        return mAd.getOrientation()
+    override fun onFinished() {
+        reload()
     }
 
-    override fun reload() {
-        mAd.reload()
+    override fun onDismissed() {
+        context.runOnUiThread { mListener?.onDismissed() }
     }
 
-    override fun isLoaded(): Boolean {
-        return mAd.isLoaded()
-    }
-
-    override fun isFailed(): Boolean {
-        return mAd.isFailed()
-    }
-
-    override fun onLoad(ad: AdServerAdView) {
-        listener?.onLoad(this)
+    override fun onLoad(ad: AdViewIntegration) {
+        context.runOnUiThread {
+            isLoaded = true
+            mAdManager?.show(this)
+            mListener?.onLoad(this)
+        }
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        listener?.onFailedToLoad(exception)
+        context.runOnUiThread {
+            mListener?.onFailedToLoad(exception)
+            isFailed = true
+        }
     }
 
     override fun onClicked() {
-        listener?.onClicked()
+        context.runOnUiThread { mListener?.onClicked() }
     }
 
     override fun onFailedToShow(code: String?) {
-        listener?.onFailedToShow(code)
+        context.runOnUiThread { mListener?.onFailedToShow(code) }
     }
 
     override fun onImpression() {
-        listener?.onImpression()
+        context.runOnUiThread { mListener?.onImpression() }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        mAdManager?.release()
+        mAdManager = null
+        AdServerEventManager.unregisterSDKInitializedListener(this)
     }
 
 
+    interface Listener {
+        fun onLoad(ad: AdView)
+        fun onFailedToLoad(exception: AdRequestException?)
+
+        @JvmDefault
+        fun onDismissed() {
+        }
+
+        @JvmDefault
+        fun onClicked() {
+        }
+
+        @JvmDefault
+        fun onFailedToShow(code: String?) {
+        }
+
+        @JvmDefault
+        fun onImpression() {
+        }
+    }
 }
