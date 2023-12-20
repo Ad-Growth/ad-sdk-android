@@ -10,15 +10,17 @@ import org.json.JSONArray
 import org.json.JSONObject
 import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAppMetaService as IGetAppMetaService
 
-class GetAppMetaService(override val manager: IInitializationManager) : IGetAppMetaService(manager) {
+class GetAppMetaService(override val manager: IInitializationManager) :
+    IGetAppMetaService(manager) {
 
     private val mHttpClient: HttpClient = HttpClient()
 
     @Throws(AdRequestException::class)
     override fun run(): AppMetaData {
         try {
-           val response = mHttpClient["/adserver/api/app_meta", null]
-           AppMetaData(response)
+
+            val response = mHttpClient["/adserver/api/apps/app_meta", HashMap()]
+            return AppMetaData(response)
         } catch (e: APIIOException) {
             throw IOErrorHandler.handle(e)
         }

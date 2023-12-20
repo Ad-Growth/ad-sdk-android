@@ -26,6 +26,10 @@ object JSONHelper {
         return getObject(json, field, JSONObject())
     }
 
+    fun safeGetBoolean(json: JSONObject, field: String, defaultValue: Boolean): Boolean {
+        return getBoolean(json, field, defaultValue)
+    }
+
     fun safeGetObject(json: JSONObject, field: String, defaultValue: JSONObject): JSONObject {
         return getObject(json, field, defaultValue)
     }
@@ -41,6 +45,14 @@ object JSONHelper {
     private fun getObject(json: JSONObject, field: String, defaultValue: JSONObject): JSONObject {
         return try {
             json.getJSONObject(field)
+        } catch (e: JSONException) {
+            defaultValue
+        }
+    }
+
+    private fun getBoolean(json: JSONObject, field: String, defaultValue: Boolean): Boolean {
+        return try {
+            json.getBoolean(field)
         } catch (e: JSONException) {
             defaultValue
         }

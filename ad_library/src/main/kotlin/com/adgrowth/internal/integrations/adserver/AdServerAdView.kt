@@ -196,9 +196,7 @@ class AdServerAdView(
                 manager, makeGetAdService(manager), makeSendAdEventService(manager)
             )
         }
-    }
 
-    companion object {
         private fun makeGetAdService(manager: AdViewManager): IGetAdService {
             return GetAdService(manager)
         }
@@ -206,5 +204,9 @@ class AdServerAdView(
         private fun makeSendAdEventService(manager: AdViewManager): ISendAdEventService {
             return SendAdEventService(manager)
         }
+    }
+
+    companion object {
+        const val TEST_UNIT_ID: String = "banner"
     }
 }

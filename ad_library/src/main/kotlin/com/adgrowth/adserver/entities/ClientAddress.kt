@@ -4,11 +4,11 @@ import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
 import org.json.JSONObject
 
 class ClientAddress(json: JSONObject) {
-    var city: String
-    var state: String
-    var country: String
-    var latitude: Double
-    var longitude: Double
+    var city: String?
+    var state: String?
+    var country: String?
+    var latitude: Double?
+    var longitude: Double?
 
     init {
         city = JSONHelper.safeGetString(json, "city")
