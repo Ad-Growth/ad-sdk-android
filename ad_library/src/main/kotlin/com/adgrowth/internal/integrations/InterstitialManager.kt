@@ -73,6 +73,10 @@ class InterstitialManager(
                     isFailed = true
                     listener.onFailedToLoad(IOErrorHandler.handle(e))
                     break
+                } catch (e: Exception) {
+                    isFailed = true
+                    listener.onFailedToLoad(IOErrorHandler.handle(e))
+                    break
                 }
             }
 

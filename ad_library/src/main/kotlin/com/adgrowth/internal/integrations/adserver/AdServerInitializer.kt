@@ -3,6 +3,7 @@ package com.adgrowth.internal.integrations.adserver
 import com.adgrowth.adserver.AdServer
 import com.adgrowth.adserver.entities.ClientProfile
 import com.adgrowth.adserver.exceptions.AdRequestException
+import com.adgrowth.adserver.exceptions.SDKInitException
 import com.adgrowth.adserver.exceptions.SDKInitException.Companion.ALREADY_INITIALIZED
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HTTPStatusCode
@@ -33,8 +34,7 @@ class AdServerInitializer(
 
 
     override fun initialize(): InitializerIntegration {
-        if (this.isInitialized)
-            throw APIIOException(HTTPStatusCode.NO_CONTENT, ALREADY_INITIALIZED)
+        if (this.isInitialized) throw APIIOException(HTTPStatusCode.NO_CONTENT, ALREADY_INITIALIZED)
 
         val future = CompletableFuture<InitializerIntegration>()
 
@@ -47,8 +47,7 @@ class AdServerInitializer(
         val clientAddress = scope.async {
             try {
                 val clientAddress = getAddressService.run(
-                    profile.clientAddress.latitude,
-                    profile.clientAddress.longitude
+                    profile.clientAddress.latitude, profile.clientAddress.longitude
                 )
 
                 profile.clientAddress = clientAddress
@@ -68,6 +67,8 @@ class AdServerInitializer(
 
             } catch (e: APIIOException) {
                 future.completeExceptionally(e)
+            } catch (e: AdRequestException) {
+                future.completeExceptionally(e)
             }
         }
 
@@ -77,9 +78,7 @@ class AdServerInitializer(
     class Builder : IInitializationManager.Builder {
         override fun build(manager: IInitializationManager): InitializerIntegration {
             return AdServerInitializer(
-                manager,
-                makeGetAppMetaService(manager),
-                makeGetAddressService()
+                manager, makeGetAppMetaService(manager), makeGetAddressService()
             )
         }
 

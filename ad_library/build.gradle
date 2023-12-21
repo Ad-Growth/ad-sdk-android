@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-def sdkVersion = "1.1.0-rc.0"
+def sdkVersion = "1.1.0"
 
 android {
     namespace 'com.adgrowth.adserver'
@@ -13,6 +13,11 @@ android {
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         minSdk 24
         targetSdk 34
@@ -36,7 +41,7 @@ android {
             buildConfigField("int", "TIME_TO_REWARD", "10")
         }
         adgrowth_dev {
-            buildConfigField("String", "API_ENDPOINT", '"https://apiad-dev.adgrowth.com"')
+            buildConfigField("String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"')
             buildConfigField("int", "DEFAULT_AD_DURATION", "10")
             buildConfigField("int", "TIME_TO_REWARD", "10")
         }

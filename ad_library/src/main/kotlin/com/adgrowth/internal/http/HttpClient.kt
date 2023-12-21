@@ -27,6 +27,8 @@ class HttpClient {
     operator fun get(path: String, params: HashMap<String, Any> = HashMap()): JSONObject {
         val query = QueryStringHelpers.encode(params)
         val urlString = mBaseUrl + path + query
+
+        println("URLSTRING ${urlString}")
         return try {
             val url = URL(urlString)
 

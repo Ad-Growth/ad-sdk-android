@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import com.adgrowth.adserver.AdServer
 import com.adgrowth.adserver.entities.ClientProfile
+import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.adserver.exceptions.SDKInitException
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HTTPStatusCode
@@ -61,6 +62,10 @@ class InitializationManager(
                 else -> notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
 
             }
+        } catch (e: AdRequestException) {
+            notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
+        } catch (e: Exception) {
+            notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
         }
 
     }
