@@ -30,12 +30,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
-        hml {
+        adgrowth_hml {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"')
             buildConfigField("int", "DEFAULT_AD_DURATION", "10")
             buildConfigField("int", "TIME_TO_REWARD", "10")
         }
-        dev {
+        adgrowth_dev {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-dev.adgrowth.com"')
             buildConfigField("int", "DEFAULT_AD_DURATION", "10")
             buildConfigField("int", "TIME_TO_REWARD", "10")
