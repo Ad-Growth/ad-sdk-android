@@ -9,7 +9,6 @@ import android.view.Window
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import java.util.*
 
 class AdDialog(context: Context) : Dialog(context, android.R.style.Theme_Translucent_NoTitleBar) {
     private val mProgressBar: ProgressBar
@@ -35,31 +34,43 @@ class AdDialog(context: Context) : Dialog(context, android.R.style.Theme_Translu
     }
 
     fun setVideoProgress(progress: Int) {
-        if (mProgressBar.visibility != View.VISIBLE) mProgressBar.visibility = View.VISIBLE
-        mProgressBar.progress = progress
+        mProgressBar.post {
+            if (mProgressBar.visibility != View.VISIBLE) mProgressBar.visibility = View.VISIBLE
+            mProgressBar.progress = progress
+        }
     }
 
     fun enableCloseButton() {
-        mCloseBtn.isEnabled = true
-        mCloseBtn.alpha = 1f
+        mCloseBtn.post {
+            mCloseBtn.isEnabled = true
+            mCloseBtn.alpha = 1f
+        }
     }
 
     val isCloseButtonEnabled: Boolean
         get() = mCloseBtn.isEnabled
 
     fun showButtonText() {
-        mCloseTextView.visibility = View.VISIBLE
+        mCloseTextView.post {
+            mCloseTextView.visibility = View.VISIBLE
+        }
     }
 
     fun hideButtonText() {
-        mCloseTextView.visibility = View.GONE
+        mCloseTextView.post {
+            mCloseTextView.visibility = View.GONE
+        }
     }
 
     fun hideProgressBar() {
-        mProgressBar.visibility = View.GONE
+        mProgressBar.post {
+            mProgressBar.visibility = View.GONE
+        }
     }
 
     fun setButtonLabelText(text: String?) {
-        mCloseTextView.text = text
+        mCloseTextView.post {
+            mCloseTextView.text = text
+        }
     }
 }

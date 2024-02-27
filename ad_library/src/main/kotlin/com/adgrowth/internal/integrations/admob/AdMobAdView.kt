@@ -15,7 +15,7 @@ import com.adgrowth.internal.integrations.admob.services.interfaces.SendAdEventS
 
 
 class AdMobAdView(
-    manager: AdViewManager,
+    private val manager: AdViewManager,
     private val getAdService: IGetAdService<AdView>,
     private val sendAdEventService: ISendAdEventService
 ) : AdViewIntegration(manager.context) {
@@ -66,15 +66,18 @@ class AdMobAdView(
     }
 
     override fun resumeAd() {
-        mAd?.resume()
+        manager.context.runOnUiThread {
+            mAd?.resume()
+        }
     }
 
     override fun pauseAd() {
-        mAd?.pause()
+        manager.context.runOnUiThread {
+            mAd?.pause()
+        }
     }
 
     override fun placeIn(parent: ViewGroup) {
-
         this.addView(mAd)
         if (parent.indexOfChild(this) >= 0) parent.removeView(this)
         parent.addView(this)
