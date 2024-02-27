@@ -36,7 +36,7 @@ class AdServerRewarded(
         super.beforeLoadCheck()
 
         val options = HashMap<String, Any>()
-        options["orientation"] = ScreenHelpers.getOrientation(mContext).toString()
+        options["orientation"] = ScreenHelpers.getOrientation().toString()
 
         mAd = getAdService.run(options)
 

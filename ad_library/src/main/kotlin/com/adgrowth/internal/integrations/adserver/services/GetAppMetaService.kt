@@ -19,7 +19,7 @@ class GetAppMetaService(override val manager: IInitializationManager) :
     override fun run(): AppMetaData {
         try {
 
-            val response = mHttpClient["/adserver/api/apps/app_meta", HashMap()]
+            val response = mHttpClient["/ads/apps/app_meta", HashMap()]
             return AppMetaData(response)
         } catch (e: APIIOException) {
             throw IOErrorHandler.handle(e)

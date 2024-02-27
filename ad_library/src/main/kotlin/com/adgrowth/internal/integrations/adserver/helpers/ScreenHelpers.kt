@@ -2,16 +2,16 @@ package com.adgrowth.internal.integrations.adserver.helpers
 
 
 import android.app.Activity
-import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.content.res.Resources
 import com.adgrowth.adserver.enums.AdOrientation
 
 
 object ScreenHelpers {
     @JvmStatic
-    fun getOrientation(context: Context): AdOrientation {
-        val orientation = context.resources.configuration.orientation
+    fun getOrientation(): AdOrientation {
+        val orientation = Resources.getSystem().configuration.orientation
         return if (orientation == Configuration.ORIENTATION_LANDSCAPE) AdOrientation.LANDSCAPE else AdOrientation.PORTRAIT
     }
 

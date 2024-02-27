@@ -56,7 +56,7 @@ class SendAdEventService(override val manager: AdManager<*, *>) : ISendAdEventSe
                 params["site_id"] = context.packageName
                 params["advertising_id"] = InitializationManager.ADVERTISING_ID
 
-                mHttpClient["/adserver/api/adverts/events", params]
+                mHttpClient["/ads/adverts/events", params]
             } catch (e: APIIOException) {
                 // TODO: ignore?
                 if (BuildConfig.DEBUG) {
