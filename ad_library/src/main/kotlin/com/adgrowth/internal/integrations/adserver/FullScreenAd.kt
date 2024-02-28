@@ -243,7 +243,6 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         if (mAdIsReady) mContext.runOnUiThread {
             @Suppress("UNCHECKED_CAST")
-            //
             mLoadFuture.complete(this@FullScreenAd as T)
         }
     }
@@ -270,7 +269,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     override fun onShow(dialogInterface: DialogInterface?) {
         mContext.runOnUiThread { mListener!!.onImpression() }
 
-        lastOrientation = getOrientation(mContext)
+        lastOrientation = getOrientation()
 
         setOrientation(mContext, mAd.orientation)
 
