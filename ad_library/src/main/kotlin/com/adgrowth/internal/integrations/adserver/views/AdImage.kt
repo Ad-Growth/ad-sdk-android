@@ -53,7 +53,6 @@ class AdImage(context: Context?, url: String, imageListener: Listener?) : ImageV
         setImageDrawable(resource)
         runOnUiThread {
             mListener!!.onImageReady()
-            Glide.with(context).load(mUrl).into(this@AdImage)
         }
         return false
     }

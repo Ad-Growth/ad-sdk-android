@@ -18,7 +18,6 @@ class AdPlayer(context: Activity, url: String?, playerListener: Listener?) : Tex
     TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
     MediaPlayer.OnCompletionListener {
 
-
     private var scaleType = ScaleType.FIT_CENTER
     var mMediaPlayer: MediaPlayer?
     private var mCurrentPosition = 0
@@ -58,7 +57,7 @@ class AdPlayer(context: Activity, url: String?, playerListener: Listener?) : Tex
         this.scaleType = scaleType
     }
 
-    fun trackProgress() {
+    private fun trackProgress() {
         if (mReleased || mMediaPlayer == null) return
         stopTrackingProgress()
         mTimer = Timer()

@@ -26,7 +26,9 @@ class AdMobInterstitial(
 
     override fun show(manager: InterstitialManager) {
         mContext = manager.context;
-        mAd!!.show(mContext);
+        mContext.runOnUiThread {
+            mAd!!.show(mContext);
+        }
     }
 
     override fun load(manager: InterstitialManager): AdMobInterstitial {

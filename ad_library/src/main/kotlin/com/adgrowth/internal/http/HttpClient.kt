@@ -28,7 +28,6 @@ class HttpClient {
         val query = QueryStringHelpers.encode(params)
         val urlString = mBaseUrl + path + query
 
-        println("URLSTRING ${urlString}")
         return try {
             val url = URL(urlString)
 

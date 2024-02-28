@@ -20,21 +20,22 @@ class AdMobRewarded(
 ) : RewardedIntegration, FullScreenContentCallback() {
 
     private lateinit var mContext: Activity
-    private var mFailed: Boolean = false
     private var mAd: RewardedAd? = null
     private var mListener: RewardedIntegration.Listener? = null
 
     override fun show(manager: RewardedManager) {
         mContext = manager.context
-        mAd!!.show(mContext) {
-            mListener?.onEarnedReward(manager.reward)
+        mContext.runOnUiThread {
+            mAd!!.show(mContext) {
+                mListener?.onEarnedReward(manager.reward)
+            }
         }
     }
 
     override fun load(manager: RewardedManager): AdMobRewarded {
         mContext = manager.context
         mListener = manager.listener
-        
+
         val adRequest = AdRequest.Builder()
         val profile = AdServer.clientProfile
 

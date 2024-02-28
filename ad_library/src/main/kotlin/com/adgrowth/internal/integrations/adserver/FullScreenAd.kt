@@ -108,12 +108,16 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     }
 
     protected fun presentPostAd() {
-        mPlayer!!.visibility = View.GONE
-        mPlayer!!.release()
-        mDialog!!.hideProgressBar()
-        mAdContainerView.addView(mAdImage)
-        mAdContainerView.removeView(mPlayer)
-        mAdImage!!.visibility = View.VISIBLE
+        mPlayer!!.post {
+            mPlayer!!.visibility = View.GONE
+            mPlayer!!.release()
+            mAdContainerView.removeView(mPlayer)
+            mAdContainerView.addView(mAdImage)
+            mAdImage!!.post {
+                mAdImage!!.visibility = View.VISIBLE
+            }
+            mDialog!!.hideProgressBar()
+        }
     }
 
     protected open fun dismiss() {
@@ -184,14 +188,15 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         }
 
         override fun onVideoFinished() {
-            presentPostAd()
+            mContext.runOnUiThread {
+                presentPostAd()
+            }
         }
 
         override fun onVideoError() {
             mLoadFuture.completeExceptionally(
                 APIIOException(
-                    HTTPStatusCode.NO_RESPONSE,
-                    AdRequestException.PLAYBACK_ERROR
+                    HTTPStatusCode.NO_RESPONSE, AdRequestException.PLAYBACK_ERROR
                 )
             )
         }
@@ -242,8 +247,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         } else mAdIsReady = true
 
         if (mAdIsReady) mContext.runOnUiThread {
-            @Suppress("UNCHECKED_CAST")
-            mLoadFuture.complete(this@FullScreenAd as T)
+            @Suppress("UNCHECKED_CAST") mLoadFuture.complete(this@FullScreenAd as T)
         }
     }
 
