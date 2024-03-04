@@ -1,9 +1,7 @@
 package com.adgrowth.internal.integrations.adserver
 
 import android.annotation.SuppressLint
-import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.ImageView
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
@@ -33,25 +31,17 @@ class AdServerAdView(
     private lateinit var mLoadFuture: CompletableFuture<AdViewIntegration>
     private var mAd: Ad? = null
     private val mContext = manager.context
-    private var mImage: AdImage? = null
-    private var mPlayer: AdPlayer? = null
+    private var mAdImage: AdImage? = null
+    private var mAdPlayer: AdPlayer? = null
     private var mListener: AdViewIntegration.Listener? = null
     private var mRunningTimer: Timer? = Timer()
     private var mCurrentRunningTime = 0
-    private var mAdDuration: Int? = Ad.DEFAULT_AD_DURATION
+    private var mAdDuration: Double = Ad.DEFAULT_AD_DURATION
 
-    private val onAdClickListener = OnClickListener {
-        sendAdEventService.run(AdEventType.CLICK, mAd!!)
-        if (mListener != null) mListener!!.onClicked()
-    }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         stopRunningTimer()
-    }
-
-    init {
-        setOnClickListener(onAdClickListener)
     }
 
     override fun setListener(listener: AdViewIntegration.Listener) {
@@ -77,19 +67,13 @@ class AdServerAdView(
                 HTTPStatusCode.FORBIDDEN, AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
             )
         }
-
-
         mCurrentRunningTime = 0
 
-
         if (mAd!!.mediaType === AdMediaType.IMAGE) {
-            mImage = AdImage(context, mAd!!.mediaUrl, this)
-            mImage!!.scaleType = ImageView.ScaleType.CENTER_CROP
-            addView(mImage)
+            mAdImage = AdImage(mContext, mAd!!.mediaUrl, this)
+
         } else {
-            mPlayer = AdPlayer(mContext, mAd!!.mediaUrl, this)
-            mPlayer!!.setScaleType(AdPlayer.ScaleType.FIT_CENTER)
-            addView(mPlayer)
+            mAdPlayer = AdPlayer(mContext, mAd!!.mediaUrl, this)
         }
 
         return mLoadFuture.get()
@@ -114,17 +98,23 @@ class AdServerAdView(
         }
     }
 
-    private fun getAdDuration(): Int {
-        if (mAd!!.refreshRate === Ad.AUTO_REFRESH_RATE && mAd!!.mediaType === AdMediaType.VIDEO) return mPlayer!!.adDuration
+    private fun getAdDuration(): Double {
+        if (mAd!!.refreshRate === Ad.AUTO_REFRESH_RATE && mAd!!.mediaType === AdMediaType.VIDEO) return mAdPlayer!!.adDuration
 
         // 0 or 30-150
         return Ad.DEFAULT_AD_DURATION
+    }
+
+    override fun onClick() {
+        sendAdEventService.run(AdEventType.CLICK, mAd!!)
+        if (mListener != null) mListener!!.onClicked()
     }
 
     override fun onImageReady() {
 
         mAdDuration = getAdDuration()
         manager.refreshRate = mAdDuration
+        mAdImage!!.addInto(this)
         mLoadFuture.complete(this)
         startRunningTimer()
         sendAdEventService.run(AdEventType.VIEW, mAd!!)
@@ -141,12 +131,12 @@ class AdServerAdView(
 
     override fun pauseAd() {
         stopRunningTimer()
-        if (mAd?.mediaType === AdMediaType.VIDEO) mPlayer?.pause()
+        if (mAd?.mediaType === AdMediaType.VIDEO) mAdPlayer?.pause()
     }
 
     override fun resumeAd() {
         startRunningTimer()
-        if (mAd?.mediaType === AdMediaType.VIDEO) mPlayer?.play()
+        if (mAd?.mediaType === AdMediaType.VIDEO) mAdPlayer?.play()
     }
 
     override fun placeIn(parent: ViewGroup) {
@@ -154,19 +144,26 @@ class AdServerAdView(
         parent.addView(this)
     }
 
+    fun destroy() {
+        mAdImage?.release()
+        mAdPlayer?.release()
+    }
+
     override fun onVideoProgressChanged(position: Double, total: Double) {
         mCurrentRunningTime = position.toInt()
     }
 
 
-    override fun onVideoReady(videoDuration: Int) {
+    override fun onVideoReady(videoDuration: Double) {
+        mAdPlayer!!.addInto(this)
         mAdDuration = getAdDuration()
-        mPlayer!!.setMuted(true)
-        manager.refreshRate = mAdDuration
+        mAdPlayer!!.setMuted(true)
+        manager.refreshRate = videoDuration
+
         mLoadFuture.complete(this)
 
         if (showPermission) {
-            mPlayer!!.play()
+            mAdPlayer!!.play()
             startRunningTimer()
         }
 

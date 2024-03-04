@@ -4,7 +4,7 @@ import android.app.Activity
 import com.adgrowth.adserver.entities.RewardItem
 
 abstract class AdManager<Listener, Builder> {
-    var refreshRate: Int? = null
+    var refreshRate: Double? = null
     lateinit var context: Activity
     lateinit var adId: String
     abstract val unitId: String

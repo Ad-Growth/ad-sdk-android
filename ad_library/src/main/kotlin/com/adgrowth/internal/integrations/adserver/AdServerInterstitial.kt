@@ -40,6 +40,8 @@ class AdServerInterstitial(
 
 
     override fun dismiss() {
+        mAdPlayer?.release()
+        mAdImage?.release()
         mContext.runOnUiThread { mListener?.onDismissed() }
         super.dismiss()
     }
@@ -51,6 +53,7 @@ class AdServerInterstitial(
     override fun onRunningTimeChanged(elapsedTime: Int) {
         super.onRunningTimeChanged(elapsedTime)
     }
+
 
     class Builder : InterstitialManager.Builder {
         override fun build(manager: InterstitialManager): InterstitialIntegration {

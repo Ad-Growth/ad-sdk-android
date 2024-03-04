@@ -1,63 +1,42 @@
 package com.adgrowth.internal.integrations.adserver.views
 
 import android.app.Activity
-import android.content.Context
-import android.graphics.drawable.Drawable
-import android.view.ViewGroup
-import android.widget.ImageView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.gif.GifDrawable
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import android.webkit.JavascriptInterface
+import com.adgrowth.internal.integrations.adserver.helpers.HTMLBuilder
 
-class AdImage(context: Context?, url: String, imageListener: Listener?) : ImageView(context),
-    RequestListener<Drawable?> {
-    private val mListener: Listener?
-    private val mUrl: String
+class AdImage(
+    context: Activity,
+    private val url: String,
+    private val listener: Listener
+) : WebViewMedia(context, url) {
 
     init {
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        translationZ = 2f
-        mListener = imageListener
-        this.mUrl = url
-        Glide.with(context!!).load(url).listener(this).preload()
+        setupWebView(object {
+            @JavascriptInterface
+            fun onImageReady() {
+                mMainHandler.post { listener.onImageReady() }
+            }
+
+            @JavascriptInterface
+            fun onClick() {
+                mMainHandler.post { listener.onClick() }
+            }
+
+            @JavascriptInterface
+            fun onImageError() {
+                mMainHandler.post { listener.onImageError() }
+            }
+        })
     }
 
-    private fun runOnUiThread(runnable: Runnable?) {
-        (context as Activity).runOnUiThread(runnable)
-    }
 
-    override fun onLoadFailed(
-        e: GlideException?,
-        model: Any,
-        target: Target<Drawable?>,
-        isFirstResource: Boolean
-    ): Boolean {
-        runOnUiThread { mListener!!.onImageError() }
-        return false
-    }
-
-    override fun onResourceReady(
-        resource: Drawable?,
-        model: Any,
-        target: Target<Drawable?>,
-        dataSource: DataSource,
-        isFirstResource: Boolean
-    ): Boolean {
-        if (resource is GifDrawable) resource.setLoopCount(GifDrawable.LOOP_FOREVER)
-        setImageDrawable(resource)
-        runOnUiThread {
-            mListener!!.onImageReady()
-        }
-        return false
+    override fun preload() {
+        html = HTMLBuilder.getImageHTML().replace("\\{media_url\\}".toRegex(), url)
+        super.preload()
     }
 
     interface Listener {
+        fun onClick()
         fun onImageReady()
         fun onImageError()
     }

@@ -103,7 +103,7 @@ class AdServerRewarded(
 
     companion object {
         const val TEST_UNIT_ID: String = "rewarded"
-        private const val TIME_TO_REWARD = BuildConfig.TIME_TO_REWARD
+        private val TIME_TO_REWARD: Double = BuildConfig.TIME_TO_REWARD
         private const val TIME_TO_SHOW_TAP_TO_CLOSE = -3
     }
 }
