@@ -8,7 +8,7 @@ class AdImage(
     context: Activity,
     private val url: String,
     private val listener: Listener
-) : WebViewMedia(context, url) {
+) : WebViewMedia(context) {
 
     init {
         setupWebView(object {

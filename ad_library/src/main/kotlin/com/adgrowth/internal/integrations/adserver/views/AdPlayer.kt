@@ -12,7 +12,7 @@ class AdPlayer(
     context: Activity,
     private val url: String,
     private val listener: Listener
-) : WebViewMedia(context, url) {
+) : WebViewMedia(context) {
 
     var adDuration = Ad.DEFAULT_AD_DURATION
         private set

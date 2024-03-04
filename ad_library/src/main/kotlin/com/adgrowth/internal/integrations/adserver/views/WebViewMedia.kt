@@ -14,7 +14,6 @@ import java.lang.Exception
 
 abstract class WebViewMedia(
     private val context: Activity,
-    private val url: String,
 ) {
     protected lateinit var html: String
     protected var mWebView: WebView? = null
