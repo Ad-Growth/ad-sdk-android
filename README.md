@@ -15,8 +15,5 @@ You can check the full documentation [HERE](https://ad-growth.github.io/ad-sdk-d
 ## Compatibility
 
 - **Minimum Android SDK**: Ad SDK requires a minimum API level of 24.
-- **Compile Android SDK**: Ad SDK requires you to compile against API 28 or later.
+- **Compile Android SDK**: Ad SDK requires you to compile against API 33 or later.
 
-## Dependencies
-
-This SDK use [Glide](https://github.com/bumptech/glide) to load images and gifs.
