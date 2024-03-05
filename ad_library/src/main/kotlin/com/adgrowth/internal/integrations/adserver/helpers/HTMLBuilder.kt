@@ -8,9 +8,9 @@ object HTMLBuilder {
             <html>
             <head>
                 <style>
-                    html {height: 100%;width: 100%;}
-                    body {display: flex;margin: 0;padding: 0;width: 100%;height: 100%;}
-                    #media {display: flex; width: 100%;height: 100%;object-fit: contain;}
+                    html {height: 100%; width: 100%; background: transparent;}
+                    body {display: flex; margin: 0;padding: 0; width: 100%; height: 100%; background: transparent;}
+                    #media {display: flex; width: 100%; height: 100%; object-fit: contain; background: transparent;}
                 </style>
             </head>
             <body>{body}</body>

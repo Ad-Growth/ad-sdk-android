@@ -2,15 +2,14 @@ package com.adgrowth.internal.integrations.adserver.views
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
-import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import java.lang.Exception
 
 abstract class WebViewMedia(
     private val context: Activity,
@@ -31,7 +30,7 @@ abstract class WebViewMedia(
                 settings.javaScriptEnabled = true
                 settings.loadWithOverviewMode = true
                 settings.useWideViewPort = true
-
+                setBackgroundColor(Color.TRANSPARENT)
                 addJavascriptInterface(javascriptInterface, JAVASCRIPT_INTERFACE_OBJECT)
                 preload()
             }
