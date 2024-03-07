@@ -33,8 +33,7 @@ import java.util.concurrent.CompletableFuture
 
 abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListener<T>>(
     private val sendAdEventService: SendAdEventService
-) : AdIntegration<T, Listener>, AdImage.Listener, DialogInterface.OnShowListener,
-    DialogInterface.OnDismissListener {
+) : AdIntegration<T, Listener>, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
     protected var mListener: Listener? = null
     protected lateinit var mContext: Activity
 
@@ -48,31 +47,30 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     protected lateinit var mAd: Ad
 
     protected var mCurrentRunningTime = 0
-    protected var mAdDuration = Ad.DEFAULT_AD_DURATION
+    protected var mAdDuration: Double = Ad.DEFAULT_AD_DURATION.toDouble()
     protected var mVideoIsReady = false
     protected var mImageIsReady = false
     protected var mAdIsReady = false
     protected lateinit var mLoadFuture: CompletableFuture<T>
     private lateinit var mAdContainerView: LinearLayout
-    private var mAdImage: AdImage? = null
-    protected var mPlayer: AdPlayer? = null
+    protected var mAdImage: AdImage? = null
+    protected var mAdPlayer: AdPlayer? = null
 
     open fun prepareAdMedia(ad: Ad) {
 
         val mediaType = ad.mediaType
 
         if (mediaType === AdMediaType.VIDEO) {
-            mPlayer = AdPlayer(
+            mAdPlayer = AdPlayer(
                 mContext, ad.mediaUrl, mPlayerListener
             )
-            mPlayer!!.setOnClickListener(mOnAdClickListener)
         }
 
         val imageUrl = if (mediaType === AdMediaType.IMAGE) ad.mediaUrl
         else ad.postMediaUrl
 
-        mAdImage = AdImage(mContext, imageUrl, this)
-        mAdImage!!.setOnClickListener(mOnAdClickListener)
+        mAdImage = AdImage(mContext, imageUrl, mImageListener)
+
     }
 
 
@@ -92,8 +90,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         prepareDialog()
 
-        if (type === AdMediaType.IMAGE) mAdContainerView.addView(mAdImage)
-        if (type === AdMediaType.VIDEO) mAdContainerView.addView(mPlayer)
+        if (type === AdMediaType.IMAGE) mAdImage!!.addInto(mAdContainerView)
+        if (type === AdMediaType.VIDEO) mAdPlayer!!.addInto(mAdContainerView)
 
         mDialog?.show()
     }
@@ -104,20 +102,17 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         mDialog!!.setOnDismissListener(this)
         mDialog!!.setOnCloseListener(onCloseListener)
         mAdContainerView = mDialog!!.findViewById(R.id.content_container)
-        mAdContainerView.setOnClickListener(mOnAdClickListener)
     }
 
     protected fun presentPostAd() {
-        mPlayer!!.post {
-            mPlayer!!.visibility = View.GONE
-            mPlayer!!.release()
-            mAdContainerView.removeView(mPlayer)
-            mAdContainerView.addView(mAdImage)
-            mAdImage!!.post {
-                mAdImage!!.visibility = View.VISIBLE
-            }
-            mDialog!!.hideProgressBar()
-        }
+        mAdPlayer?.release()
+
+        mAdPlayer!!.release()
+        mAdPlayer!!.removeFrom(mAdContainerView)
+        mAdImage!!.addInto(mAdContainerView)
+
+        mDialog!!.hideProgressBar()
+
     }
 
     protected open fun dismiss() {
@@ -166,8 +161,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         if (elapsedTime >= TIME_TO_CLOSE && !mDialog!!.isCloseButtonEnabled) mDialog!!.enableCloseButton()
     }
 
-    private val mOnAdClickListener = View.OnClickListener { view: View ->
-        if (view.isEnabled) {
+    protected val mOnAdClickListener: () -> Unit = {
+        if (mAdContainerView.isEnabled) {
             Thread {
                 sendAdEventService.run(AdEventType.CLICK, mAd)
             }.start()
@@ -176,13 +171,12 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     }
     private val onCloseListener = View.OnClickListener { dismiss() }
     private val mPlayerListener: AdPlayer.Listener = object : AdPlayer.Listener {
-        override fun onVideoReady(videoDuration: Int) {
+        override fun onVideoReady(videoDuration: Double) {
             mAdDuration = videoDuration
             mVideoIsReady = true
             if (mImageIsReady) mAdIsReady = true
             if (mAdIsReady) {
                 @Suppress("UNCHECKED_CAST")
-                //
                 mLoadFuture.complete(this@FullScreenAd as T)
             }
         }
@@ -201,6 +195,10 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
             )
         }
 
+        override fun onClick() {
+            mOnAdClickListener.invoke()
+        }
+
         override fun onVideoProgressChanged(position: Double, total: Double) {
             mDialog?.setVideoProgress((position / total * 100).toInt())
         }
@@ -216,15 +214,15 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
             override fun onActivityResumed(activity: Activity) {
                 startRunningTimer()
-                if (mPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
-                    mPlayer!!.play()
+                if (mAdPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
+                    mAdPlayer!!.play()
                 }
             }
 
             override fun onActivityPaused(activity: Activity) {
                 stopRunningTimer()
-                if (mPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
-                    mPlayer!!.pause()
+                if (mAdPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
+                    mAdPlayer!!.pause()
                 }
             }
 
@@ -237,23 +235,33 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
                 stopRunningTimer()
             }
         }
-
-
-    override fun onImageReady() {
-        mImageIsReady = true
-
-        if (mAd.mediaType === AdMediaType.VIDEO) {
-            if (mVideoIsReady) mAdIsReady = true
-        } else mAdIsReady = true
-
-        if (mAdIsReady) mContext.runOnUiThread {
-            @Suppress("UNCHECKED_CAST") mLoadFuture.complete(this@FullScreenAd as T)
+    private val mImageListener: AdImage.Listener = object : AdImage.Listener {
+        override fun onClick() {
+            mAdImage.let {
+                mOnAdClickListener.invoke()
+            }
         }
-    }
 
-    override fun onImageError() {
-        mFailedToLoad = true
-        mLoadFuture.completeExceptionally(APIIOException(403, AdRequestException.PLAYBACK_ERROR))
+        override fun onImageReady() {
+            mImageIsReady = true
+
+            if (mAd.mediaType === AdMediaType.VIDEO) {
+                if (mVideoIsReady) mAdIsReady = true
+            } else mAdIsReady = true
+
+            if (mAdIsReady) mContext.runOnUiThread {
+                @Suppress("UNCHECKED_CAST") mLoadFuture.complete(this@FullScreenAd as T)
+            }
+        }
+
+        override fun onImageError() {
+            mFailedToLoad = true
+            mLoadFuture.completeExceptionally(
+                APIIOException(
+                    403, AdRequestException.PLAYBACK_ERROR
+                )
+            )
+        }
     }
 
     override fun onDismiss(dialogInterface: DialogInterface?) {
@@ -264,7 +272,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         mContext.application.unregisterActivityLifecycleCallbacks(mActivityLifecycleListener)
         mContext.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
-        mPlayer?.release()
+        mAdPlayer?.release()
 
         AdServerEventManager.notifyFullScreenDismissed()
         stopRunningTimer()
@@ -282,8 +290,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         mDialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        if (mPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
-            mPlayer!!.play()
+        if (mAdPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
+            mAdPlayer!!.play()
         }
 
         startRunningTimer()

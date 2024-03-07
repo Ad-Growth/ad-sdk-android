@@ -13,7 +13,7 @@ class Ad(json: JSONObject) {
     private val mRewardItem: String
     var impressionUrl: String
         private set
-    val refreshRate: Int?
+    val refreshRate: Double?
     val id: String
     val ipAddress: String
     val mediaUrl: String
@@ -41,7 +41,7 @@ class Ad(json: JSONObject) {
         // meta
         mRewardItem = JSONHelper.safeGetString(meta, "reward_item", DEFAULT_REWARD_ITEM)!!
         mRewardValue = JSONHelper.safeGetInt(meta, "reward_value", DEFAULT_REWARD_VALUE)!!
-        refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)
+        refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)?.toDouble()
         ipAddress = JSONHelper.safeGetString(meta, "ip_address")
     }
 
@@ -73,8 +73,8 @@ class Ad(json: JSONObject) {
 
         @JvmField
         val AUTO_REFRESH_RATE = null
-        const val DISABLED_REFRESH_RATE = 0
-        const val DEFAULT_AD_DURATION = BuildConfig.DEFAULT_AD_DURATION
+        const val DISABLED_REFRESH_RATE = 0.0
+        val DEFAULT_AD_DURATION: Double = BuildConfig.DEFAULT_AD_DURATION
         const val DEFAULT_REWARD_VALUE = 1
     }
 }

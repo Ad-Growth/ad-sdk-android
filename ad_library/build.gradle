@@ -32,28 +32,28 @@ android {
         release {
             minifyEnabled true
             buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "30")
-            buildConfigField("int", "TIME_TO_REWARD", "30")
+            buildConfigField("Double", "DEFAULT_AD_DURATION", "30.0")
+            buildConfigField("Double", "TIME_TO_REWARD", "30.0")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
         adgrowth_hml {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
-            buildConfigField("int", "TIME_TO_REWARD", "10")
+            buildConfigField("Double", "DEFAULT_AD_DURATION", "10.0")
+            buildConfigField("Double", "TIME_TO_REWARD", "10.0")
         }
 
         adgrowth_dev {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-dev.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
-            buildConfigField("int", "TIME_TO_REWARD", "10")
+            buildConfigField("Double", "DEFAULT_AD_DURATION", "10.0")
+            buildConfigField("Double", "TIME_TO_REWARD", "10.0")
         }
 
         debug {
             matchingFallbacks = ['release']
             buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
-            buildConfigField("int", "TIME_TO_REWARD", "10")
+            buildConfigField("Double", "DEFAULT_AD_DURATION", "10.0")
+            buildConfigField("Double", "TIME_TO_REWARD", "10.0")
         }
 
     }
@@ -72,8 +72,6 @@ android {
 
 
 dependencies {
-    api 'com.github.bumptech.glide:glide:4.15.1'
-
     api 'androidx.core:core-ktx:1.9.0'
 
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"

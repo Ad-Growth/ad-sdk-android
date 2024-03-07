@@ -86,7 +86,7 @@ class AdViewManager(
                         val meta = JSONHelper.safeGetObject(e.body, "meta")
 
                         if (meta.has("refresh_rate")) {
-                            refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)
+                            refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)?.toDouble()
                         }
 
                         builder = getNextIntegration()
@@ -215,7 +215,7 @@ class AdViewManager(
     }
 
     companion object {
-        private const val AFTER_ERROR_REFRESH_RATE = 10
+        private const val AFTER_ERROR_REFRESH_RATE = 10.0
     }
 
 }
