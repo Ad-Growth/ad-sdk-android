@@ -27,6 +27,7 @@ class InitializationManager(
 
     init {
         try {
+            APP_PACKAGE_NAME = context.packageName
             CLIENT_KEY = getClientKey(context)
 
             val adServer = AdServerInitializer.Builder().build(this).initialize()
@@ -105,5 +106,6 @@ class InitializationManager(
         var CLIENT_KEY: String = ""
         var ADVERTISING_ID: String = ""
         var IP_ADDRESS: String = "127.0.0.1"
+        var APP_PACKAGE_NAME = ""
     }
 }
