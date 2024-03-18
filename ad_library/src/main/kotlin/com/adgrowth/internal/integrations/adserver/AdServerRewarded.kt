@@ -1,6 +1,6 @@
 package com.adgrowth.internal.integrations.adserver
 
-import android.content.DialogInterface
+
 import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.adserver.R
 import com.adgrowth.internal.integrations.RewardedManager
@@ -22,8 +22,8 @@ class AdServerRewarded(
     private var mRewarded = false
 
 
-    override fun onShow(dialogInterface: DialogInterface?) {
-        super.onShow(dialogInterface)
+    override fun onShow() {
+        super.onShow()
         mDialog?.showButtonText()
     }
 
@@ -49,12 +49,6 @@ class AdServerRewarded(
     override fun show(manager: RewardedManager) {
         super.show(manager)
     }
-
-    override fun dismiss() {
-        super.dismiss()
-        mContext.runOnUiThread { mListener!!.onDismissed() }
-    }
-
     override fun setListener(listener: RewardedIntegration.Listener) {
         mListener = listener
     }

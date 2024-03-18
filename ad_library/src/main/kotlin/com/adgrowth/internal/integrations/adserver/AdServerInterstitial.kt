@@ -38,14 +38,6 @@ class AdServerInterstitial(
         super.show(manager)
     }
 
-
-    override fun dismiss() {
-        mAdPlayer?.release()
-        mAdImage?.release()
-        mContext.runOnUiThread { mListener?.onDismissed() }
-        super.dismiss()
-    }
-
     override fun setListener(listener: InterstitialIntegration.Listener) {
         mListener = listener
     }

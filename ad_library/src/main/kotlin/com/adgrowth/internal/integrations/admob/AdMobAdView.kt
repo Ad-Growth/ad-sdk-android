@@ -69,6 +69,18 @@ class AdMobAdView(
         return this
     }
 
+    override fun hide() {
+        mainScope.launch {
+            visibility = GONE
+        }
+    }
+
+    override fun unhide() {
+        mainScope.launch {
+            visibility = VISIBLE
+        }
+    }
+
     override fun resumeAd() {
         mainScope.launch {
             mAd?.resume()
