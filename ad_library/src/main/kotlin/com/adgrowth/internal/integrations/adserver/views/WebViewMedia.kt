@@ -32,8 +32,6 @@ abstract class WebViewMedia(
             )
             mWebView?.apply {
                 settings.javaScriptEnabled = true
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
                 settings.domStorageEnabled = false
                 webViewClient = WebViewClient()
                 setBackgroundColor(Color.TRANSPARENT)
