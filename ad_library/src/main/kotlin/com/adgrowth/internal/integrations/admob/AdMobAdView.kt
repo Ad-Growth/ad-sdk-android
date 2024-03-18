@@ -1,5 +1,6 @@
 package com.adgrowth.internal.integrations.admob
 
+import android.os.Handler
 import android.view.ViewGroup
 import com.adgrowth.adserver.AdServer
 import com.adgrowth.internal.enums.AdEventType
@@ -9,6 +10,9 @@ import com.adgrowth.internal.integrations.admob.services.GetAdViewService
 import com.adgrowth.internal.integrations.admob.services.SendAdEventService
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
 import com.google.android.gms.ads.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 import com.adgrowth.internal.integrations.admob.services.interfaces.SendAdEventService as ISendAdEventService
@@ -19,7 +23,7 @@ class AdMobAdView(
     private val getAdService: IGetAdService<AdView>,
     private val sendAdEventService: ISendAdEventService
 ) : AdViewIntegration(manager.context) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mAdRequest: AdRequest.Builder
     private var mAd: AdView? = null
     private var mListener: Listener? = null
@@ -66,13 +70,13 @@ class AdMobAdView(
     }
 
     override fun resumeAd() {
-        manager.context.runOnUiThread {
+        mainScope.launch {
             mAd?.resume()
         }
     }
 
     override fun pauseAd() {
-        manager.context.runOnUiThread {
+        mainScope.launch {
             mAd?.pause()
         }
     }

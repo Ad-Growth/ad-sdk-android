@@ -3,28 +3,32 @@ package com.adgrowth.internal.integrations.adserver.views
 import android.app.Activity
 import android.webkit.JavascriptInterface
 import com.adgrowth.internal.integrations.adserver.helpers.HTMLBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AdImage(
     context: Activity,
     private val url: String,
     private val listener: Listener
 ) : WebViewMedia(context) {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
 
     init {
         setupWebView(object {
             @JavascriptInterface
             fun onImageReady() {
-                mMainHandler.post { listener.onImageReady() }
+                mainScope.launch { listener.onImageReady() }
             }
 
             @JavascriptInterface
             fun onClick() {
-                mMainHandler.post { listener.onClick() }
+                mainScope.launch { listener.onClick() }
             }
 
             @JavascriptInterface
             fun onImageError() {
-                mMainHandler.post { listener.onImageError() }
+                mainScope.launch { listener.onImageError() }
             }
         })
     }

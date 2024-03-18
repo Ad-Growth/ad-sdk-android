@@ -12,7 +12,6 @@ import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.admob.AdMobAdView
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.AdServerAdView
-import com.adgrowth.internal.integrations.adserver.AdServerInterstitial
 
 import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
@@ -21,15 +20,20 @@ import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
 import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import java.util.*
 
 class AdViewManager(
     private val mUnitId: String,
 ) : AdManager<AdViewIntegration.Listener, AdViewManager.Builder>(),
     Application.ActivityLifecycleCallbacks, AdServerEventManager.FullScreenListener {
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private var mAd: AdViewIntegration? = null
     override lateinit var listener: AdViewIntegration.Listener
-
     private var mRefreshTimer: Timer? = null
     var isFailed = false
         private set
@@ -74,10 +78,10 @@ class AdViewManager(
         this.orientation = orientation
         this.mAd = null
 
-        Thread {
+       ioScope.launch {
             while (mAd == null && builder != null) {
                 try {
-                    mAd = builder!!.build(this).load(this)
+                    mAd = builder!!.build(this@AdViewManager).load(this@AdViewManager)
                     listener.onLoad(mAd!!)
                     break
                 } catch (e: APIIOException) {
@@ -113,7 +117,7 @@ class AdViewManager(
                 isFailed = true
                 listener.onFailedToLoad(AdRequestException(AdRequestException.NO_AD_FOUND))
             }
-        }.start()
+        }
     }
 
 
@@ -122,7 +126,7 @@ class AdViewManager(
         context.application.registerActivityLifecycleCallbacks(this)
         AdServerEventManager.registerFullScreenListener(this)
 
-        context.runOnUiThread {
+        mainScope.launch {
             stopRefreshTimer()
             mAd?.placeIn(parent)
             mCurrentRefreshTime = 0
@@ -131,7 +135,7 @@ class AdViewManager(
     }
 
     fun reload(parent: ViewGroup) {
-        context.runOnUiThread {
+        mainScope.launch {
             stopRefreshTimer()
             if (parent.indexOfChild(mAd) >= 0) parent.removeView(mAd)
             load(context, size, orientation)

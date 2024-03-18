@@ -8,13 +8,16 @@ import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.InitializationManager
 import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.google.android.gms.ads.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.CompletableFuture
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 
 
 class GetAdViewService(override val manager: AdViewManager) :
     IGetAdService<AdView>(manager) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     override fun run(adRequest: AdRequest): AdView {
         val context = manager.context
         val future = CompletableFuture<AdView>()
@@ -41,7 +44,7 @@ class GetAdViewService(override val manager: AdViewManager) :
             }
         }
 
-        context.runOnUiThread {
+        mainScope.launch {
             ad = AdView(context)
             ad.setAdSize(adSize)
             ad.layoutParams = getAdLayoutParams(manager.orientation, manager.size)

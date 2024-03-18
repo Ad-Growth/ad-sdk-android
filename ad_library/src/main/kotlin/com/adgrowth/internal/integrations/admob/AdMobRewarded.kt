@@ -11,6 +11,9 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 import com.adgrowth.internal.integrations.admob.services.interfaces.SendAdEventService as ISendAdEventService
 
@@ -18,14 +21,14 @@ class AdMobRewarded(
     private val getAdService: IGetAdService<RewardedAd>,
     private val sendAdEventService: ISendAdEventService
 ) : RewardedIntegration, FullScreenContentCallback() {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mContext: Activity
     private var mAd: RewardedAd? = null
     private var mListener: RewardedIntegration.Listener? = null
 
     override fun show(manager: RewardedManager) {
         mContext = manager.context
-        mContext.runOnUiThread {
+        mainScope.launch {
             mAd!!.show(mContext) {
                 mListener?.onEarnedReward(manager.reward)
             }

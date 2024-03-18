@@ -11,10 +11,15 @@ import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
 import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
 import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.integrations.InterstitialIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 class InterstitialManager(
     private val mUnitId: String,
 ) : AdManager<InterstitialIntegration.Listener, InterstitialManager.Builder>() {
+    private val ioScope = CoroutineScope(Dispatchers.IO)
     var isLoaded = false
         private set
     var isFailed = false
@@ -54,13 +59,13 @@ class InterstitialManager(
         }
         this.context = context
 
-        Thread {
+        ioScope.launch {
             while (mAd == null && builder != null) {
 
-                this.isLoaded = false
+                isLoaded = false
 
                 try {
-                    mAd = builder!!.build(this).load(this)
+                    mAd = builder!!.build(this@InterstitialManager).load(this@InterstitialManager)
                     isLoaded = true
                     listener.onLoad(mAd!!)
                     break
@@ -84,7 +89,7 @@ class InterstitialManager(
                 isFailed = true
                 listener.onFailedToLoad(AdRequestException(AdRequestException.NO_AD_FOUND))
             }
-        }.start()
+        }
 
     }
 
