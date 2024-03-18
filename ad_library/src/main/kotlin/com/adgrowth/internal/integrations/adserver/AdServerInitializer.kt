@@ -1,9 +1,7 @@
 package com.adgrowth.internal.integrations.adserver
 
-import com.adgrowth.adserver.AdServer
 import com.adgrowth.adserver.entities.ClientProfile
 import com.adgrowth.adserver.exceptions.AdRequestException
-import com.adgrowth.adserver.exceptions.SDKInitException
 import com.adgrowth.adserver.exceptions.SDKInitException.Companion.ALREADY_INITIALIZED
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HTTPStatusCode
@@ -15,7 +13,10 @@ import com.adgrowth.internal.integrations.adserver.services.GetAppMetaService
 import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAddressService as IGetAddressService
 import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAppMetaService as IGetAppMetaService
 import com.adgrowth.internal.interfaces.integrations.InitializerIntegration
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import java.util.concurrent.CompletableFuture
 
 
@@ -26,9 +27,9 @@ class AdServerInitializer(
 ) : InitializerIntegration(
     manager
 ) {
+    private val ioScope = CoroutineScope(Dispatchers.IO)
     private val profile: ClientProfile = manager.clientProfile
     lateinit var appMetadata: AppMetaData
-
     var isInitialized = false
         private set
 
@@ -38,13 +39,12 @@ class AdServerInitializer(
 
         val future = CompletableFuture<InitializerIntegration>()
 
-        val scope = CoroutineScope(Dispatchers.IO)
 
-        val appMetadata = scope.async {
+        val appMetaTask = ioScope.async {
             appMetadata = getAppMetaService.run()
         }
 
-        val clientAddress = scope.async {
+        val clientAddressTask = ioScope.async {
             try {
                 val clientAddress = getAddressService.run(
                     profile.clientAddress.latitude, profile.clientAddress.longitude
@@ -58,10 +58,10 @@ class AdServerInitializer(
         }
 
 
-        scope.launch {
+        ioScope.launch {
             try {
-                appMetadata.await()
-                clientAddress.await()
+                appMetaTask.await()
+                clientAddressTask.await()
 
                 future.complete(this@AdServerInitializer)
 
