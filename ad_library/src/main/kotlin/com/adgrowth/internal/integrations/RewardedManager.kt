@@ -109,6 +109,9 @@ class RewardedManager(
 
     fun show(context: Activity) {
         if (!AdServerEventManager.showPermission) {
+            // ignore if it's already showing
+            if (AdServerEventManager.adCurrentlyShown == hashCode()) return
+
             listener.onFailedToShow(AdRequestException.ALREADY_SHOWING_FULL_SCREEN_AD)
             return
         }
