@@ -205,11 +205,13 @@ class AdViewManager(
 
     override fun onFullScreenShown(instanceHash: Int) {
         stopRefreshTimer()
+        mAd?.hide()
         mAd?.pauseAd()
     }
 
     override fun onFullScreenDismissed() {
         startRefreshTimer()
+        mAd?.unhide()
         mAd?.resumeAd()
     }
 

@@ -8,7 +8,7 @@ import com.adgrowth.adserver.entities.ClientProfile
  * This class handle internal events on AdServer
  */
 object AdServerEventManager {
-    private var adCurrentlyShown: Int? = null
+    var adCurrentlyShown: Int? = null
     private val initializeListeners: MutableList<SdkInitializedListener> = ArrayList()
     private val fullScreenListeners: MutableList<FullScreenListener> = ArrayList()
     private val clientProfileListener: MutableList<ClientProfileListener> = ArrayList()

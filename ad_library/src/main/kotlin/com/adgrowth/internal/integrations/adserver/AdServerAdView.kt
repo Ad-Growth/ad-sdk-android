@@ -19,6 +19,9 @@ import com.adgrowth.internal.integrations.adserver.services.interfaces.SendAdEve
 import com.adgrowth.internal.integrations.adserver.views.AdImage
 import com.adgrowth.internal.integrations.adserver.views.AdPlayer
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -28,6 +31,7 @@ class AdServerAdView(
     private val getAdService: IGetAdService,
     private val sendAdEventService: ISendAdEventService
 ) : AdViewIntegration(manager.context), AdImage.Listener, AdPlayer.Listener {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mLoadFuture: CompletableFuture<AdViewIntegration>
     private var mAd: Ad? = null
     private val mContext = manager.context
@@ -42,6 +46,8 @@ class AdServerAdView(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         stopRunningTimer()
+        mAdImage?.release()
+        mAdPlayer?.release()
     }
 
     override fun setListener(listener: AdViewIntegration.Listener) {
@@ -77,6 +83,18 @@ class AdServerAdView(
         }
 
         return mLoadFuture.get()
+    }
+
+    override fun hide() {
+        mainScope.launch {
+            visibility = GONE
+        }
+    }
+
+    override fun unhide() {
+        mainScope.launch {
+            visibility = VISIBLE
+        }
     }
 
     private fun startRunningTimer() {

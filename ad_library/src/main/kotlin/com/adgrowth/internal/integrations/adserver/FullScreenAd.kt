@@ -28,19 +28,24 @@ import com.adgrowth.internal.integrations.adserver.views.AdImage
 import com.adgrowth.internal.integrations.adserver.views.AdPlayer
 import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.listeners.AdListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
 abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListener<T>>(
     private val sendAdEventService: SendAdEventService
-) : AdIntegration<T, Listener>, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
+) : AdIntegration<T, Listener>, AdDialog.OnShowListener, AdDialog.OnDismissListener {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+    val instanceId = hashCode()
     protected var mListener: Listener? = null
     protected lateinit var mContext: Activity
 
     var mFailedToLoad = false
 
     protected var mDialog: AdDialog? = null
-
     private var lastOrientation: AdOrientation? = null
     private var mRunningTimer: Timer? = Timer()
 
@@ -86,12 +91,14 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         }
 
         mContext = manager.context
-        val type = mAd.mediaType
+        val mediaType = mAd.mediaType
 
         prepareDialog()
 
-        if (type === AdMediaType.IMAGE) mAdImage!!.addInto(mAdContainerView)
-        if (type === AdMediaType.VIDEO) mAdPlayer!!.addInto(mAdContainerView)
+        if (mediaType === AdMediaType.IMAGE) mAdImage!!.addInto(mAdContainerView)
+        if (mediaType === AdMediaType.VIDEO) mAdPlayer!!.addInto(mAdContainerView)
+
+        AdServerEventManager.notifyFullScreenShown(manager.hashCode())
 
         mDialog?.show()
     }
@@ -105,10 +112,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     }
 
     protected fun presentPostAd() {
-        mAdPlayer?.release()
-
         mAdPlayer!!.release()
-        mAdPlayer!!.removeFrom(mAdContainerView)
         mAdImage!!.addInto(mAdContainerView)
 
         mDialog!!.hideProgressBar()
@@ -127,7 +131,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         val task: TimerTask = object : TimerTask() {
             override fun run() {
                 mCurrentRunningTime++
-                mContext.runOnUiThread { onRunningTimeChanged(mCurrentRunningTime) }
+                mainScope.launch { onRunningTimeChanged(mCurrentRunningTime) }
             }
         }
         mRunningTimer!!.scheduleAtFixedRate(task, 1000, 1000)
@@ -163,9 +167,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
     protected val mOnAdClickListener: () -> Unit = {
         if (mAdContainerView.isEnabled) {
-            Thread {
-                sendAdEventService.run(AdEventType.CLICK, mAd)
-            }.start()
+            sendAdEventService.run(AdEventType.CLICK, mAd)
             if (mListener != null) mListener!!.onClicked()
         }
     }
@@ -182,7 +184,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         }
 
         override fun onVideoFinished() {
-            mContext.runOnUiThread {
+            mainScope.launch {
                 presentPostAd()
             }
         }
@@ -249,7 +251,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
                 if (mVideoIsReady) mAdIsReady = true
             } else mAdIsReady = true
 
-            if (mAdIsReady) mContext.runOnUiThread {
+            if (mAdIsReady) mainScope.launch {
                 @Suppress("UNCHECKED_CAST") mLoadFuture.complete(this@FullScreenAd as T)
             }
         }
@@ -264,8 +266,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         }
     }
 
-    override fun onDismiss(dialogInterface: DialogInterface?) {
-        mDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    override fun onDismiss() {
+        mContext.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         if (lastOrientation != null) setOrientation(mContext, lastOrientation!!)
 
@@ -276,10 +278,14 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         AdServerEventManager.notifyFullScreenDismissed()
         stopRunningTimer()
+        mAdPlayer?.release()
+        mAdImage?.release()
+
+        mainScope.launch { mListener!!.onDismissed() }
     }
 
-    override fun onShow(dialogInterface: DialogInterface?) {
-        mContext.runOnUiThread { mListener!!.onImpression() }
+    override fun onShow() {
+        mainScope.launch { mListener!!.onImpression() }
 
         lastOrientation = getOrientation()
 
@@ -288,7 +294,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         mContext.application.registerActivityLifecycleCallbacks(mActivityLifecycleListener)
         mContext.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
-        mDialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        mContext.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         if (mAdPlayer != null && mAd.mediaType === AdMediaType.VIDEO) {
             mAdPlayer!!.play()
@@ -296,10 +302,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         startRunningTimer()
         mAd.isConsumed = true
-        AdServerEventManager.notifyFullScreenShown(hashCode())
-        Thread {
-            sendAdEventService.run(AdEventType.VIEW, mAd)
-        }.start()
+
+        sendAdEventService.run(AdEventType.VIEW, mAd)
     }
 
     companion object {

@@ -10,6 +10,8 @@ abstract class AdViewIntegration(context: Context) : CenteredChildrenView(contex
     AdIntegration<AdViewIntegration, AdViewIntegration.Listener> {
     abstract fun load(manager: AdViewManager): AdViewIntegration
 
+    abstract fun hide()
+    abstract fun unhide()
     abstract fun resumeAd()
     abstract fun pauseAd()
     abstract fun placeIn(parent: ViewGroup)

@@ -8,10 +8,22 @@ object IOErrorHandler {
     fun handle(e: Exception): AdRequestException {
         if (e is APIIOException) {
             when (e.statusCode) {
-                0 -> return AdRequestException(e.message ?: AdRequestException.NETWORK_ERROR)
-                HTTPStatusCode.NOT_FOUND -> if (e.message!!.contains("No ads found")) return AdRequestException(
-                    AdRequestException.NO_AD_FOUND
+                HTTPStatusCode.NO_RESPONSE -> return AdRequestException(
+                    e.message ?: AdRequestException.NETWORK_ERROR
                 )
+
+                HTTPStatusCode.NOT_FOUND -> {
+                    if (e.message!!.contains("No ads found")) {
+                        return AdRequestException(
+                            AdRequestException.NO_AD_FOUND
+                        )
+                    } else if (e.message?.contains("App not found") == true) {
+                        return AdRequestException(
+                            AdRequestException.APP_NOT_FOUND
+                        )
+                    }
+                }
+
                 HTTPStatusCode.BAD_REQUEST -> {
                     if (e.message!!.contains("Unit_id invalid")) return AdRequestException(
                         AdRequestException.INVALID_UNIT_ID

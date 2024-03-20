@@ -6,17 +6,19 @@ class SDKInitException : Exception {
     override var message: String? = null
         private set(code) {
             when (code) {
-                ALREADY_INITIALIZED -> field =
-                    "You already initialized this with this key, just use it."
+                INVALID_CLIENT_KEY -> field = "Your app key does not match any app in our database."
+                APP_NOT_FOUND -> field = "Your app key doesn't match with any app on our database."
+                ALREADY_INITIALIZED -> field ="You already initialized this with this key, just use it."
                 UNAUTHORIZED_CLIENT_KEY -> field = "The provided client key is not valid."
-                UNKNOWN_ERROR, INTERNAL_ERROR -> field =
-                    "Sorry, this was an unexpected error, please try again."
+                UNKNOWN_ERROR, INTERNAL_ERROR -> field = "Sorry, this was an unexpected error, please try again."
+                NETWORK_ERROR -> field = "It is possible that your internet connection is unstable, please try again."
                 else -> {}
             }
         }
 
     constructor(e: AdRequestException) {
-        handleError(e.code)
+        code = e.code
+        message = e.code
     }
 
     constructor(errorCode: String?) {
@@ -24,19 +26,12 @@ class SDKInitException : Exception {
         message = this.code
     }
 
-    private fun handleError(errorCode: String) {
-        when (errorCode) {
-            AdRequestException.NETWORK_ERROR -> this.code = NETWORK_ERROR
-            AdRequestException.INTERNAL_ERROR -> this.code = INTERNAL_ERROR
-            AdRequestException.UNKNOWN_ERROR -> this.code = UNKNOWN_ERROR
-            else -> this.code = UNKNOWN_ERROR
-        }
-        message = this.code
-    }
 
     companion object {
         const val UNAUTHORIZED_CLIENT_KEY = "unauthorized_client_key"
         const val ALREADY_INITIALIZED = "already_initialized"
+        const val APP_NOT_FOUND = "app_not_found"
+        const val INVALID_CLIENT_KEY = "invalid_client_key"
         const val INTERNAL_ERROR = "internal_error"
         const val NETWORK_ERROR = "network_error"
         const val UNKNOWN_ERROR = "unknown_error"

@@ -67,9 +67,12 @@ class InitializationManager(
 
             }
         } catch (e: AdRequestException) {
-            notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
+            notifyFailed(SDKInitException(e))
         } catch (e: Exception) {
-            notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
+            if (e.cause is AdRequestException)
+                notifyFailed(SDKInitException(e.cause as AdRequestException))
+            else
+                notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
         }
 
     }

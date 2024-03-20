@@ -12,6 +12,7 @@ class AdRequestException(val code: String) : Exception() {
         const val INVALID_UNIT_ID = "invalid_unit_id"
         const val SDK_NOT_INITIALIZED = "sdk_not_initialized"
         const val NO_AD_FOUND = "no_ad_found"
+        const val APP_NOT_FOUND = "app_not_found"
         const val ALREADY_LOADED = "already_loaded"
         const val ALREADY_CONSUMED = "already_consumed"
         const val NOT_READY = "not_ready"
