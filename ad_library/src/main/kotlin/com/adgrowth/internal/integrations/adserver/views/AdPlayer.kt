@@ -5,6 +5,9 @@ import android.app.Activity
 import android.webkit.JavascriptInterface
 import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.integrations.adserver.helpers.HTMLBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 @SuppressLint("ViewConstructor")
@@ -13,7 +16,7 @@ class AdPlayer(
     private val url: String,
     private val listener: Listener
 ) : WebViewMedia(context) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     var adDuration = Ad.DEFAULT_AD_DURATION
         private set
 
@@ -21,7 +24,7 @@ class AdPlayer(
         setupWebView(object {
             @JavascriptInterface
             fun onVideoReady(duration: Double) {
-                mMainHandler.post {
+                mainScope.launch {
                     adDuration = duration
                     listener.onVideoReady(duration)
                 }
@@ -29,32 +32,32 @@ class AdPlayer(
 
             @JavascriptInterface
             fun onClick() {
-                mMainHandler.post { listener.onClick() }
+                mainScope.launch { listener.onClick() }
             }
 
             @JavascriptInterface
             fun onVideoError() {
-                mMainHandler.post { listener.onVideoError() }
+                mainScope.launch { listener.onVideoError() }
             }
 
             @JavascriptInterface
             fun onPlay() {
-                mMainHandler.post { listener.onPlay() }
+                mainScope.launch { listener.onPlay() }
             }
 
             @JavascriptInterface
             fun onPause() {
-                mMainHandler.post { listener.onPause() }
+                mainScope.launch { listener.onPause() }
             }
 
             @JavascriptInterface
             fun onVideoFinished() {
-                mMainHandler.post { listener.onVideoFinished() }
+                mainScope.launch { listener.onVideoFinished() }
             }
 
             @JavascriptInterface
             fun onVideoProgressChanged(position: Double, total: Double) {
-                 mMainHandler.post { listener.onVideoProgressChanged(position, total) }
+                mainScope.launch { listener.onVideoProgressChanged(position, total) }
             }
         })
     }

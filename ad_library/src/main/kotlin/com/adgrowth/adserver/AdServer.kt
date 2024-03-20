@@ -6,8 +6,12 @@ import com.adgrowth.adserver.exceptions.SDKInitException
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager.notifyProfileChanged
 import com.adgrowth.internal.integrations.adserver.helpers.AdvertisingIdManager.getAdvertisingId
 import com.adgrowth.internal.integrations.InitializationManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object AdServer {
+    private val ioScope = CoroutineScope(Dispatchers.IO)
 
     @JvmStatic
     val isInitialized: Boolean
@@ -41,8 +45,10 @@ object AdServer {
             return
         }
 
-        Thread { InitializationManager.ADVERTISING_ID = getAdvertisingId(context) }.start()
-        Thread { InitializationManager(context, clientProfile, listener) }.start()
+        ioScope.launch {
+            InitializationManager.ADVERTISING_ID = getAdvertisingId(context)
+            InitializationManager(context, clientProfile, listener)
+        }
     }
 
 

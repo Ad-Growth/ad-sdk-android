@@ -6,8 +6,12 @@ import com.adgrowth.adserver.entities.RewardItem
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.integrations.RewardedManager
 import com.adgrowth.internal.interfaces.integrations.RewardedIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class RewardedAd(unitId: String) : RewardedIntegration.Listener {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mContext: Activity
     private lateinit var mListener: Listener
     private var mAdManager: RewardedManager
@@ -44,31 +48,31 @@ class RewardedAd(unitId: String) : RewardedIntegration.Listener {
     }
 
     override fun onDismissed() {
-        mContext.runOnUiThread { mListener.onDismissed() }
+        mainScope.launch { mListener.onDismissed() }
     }
 
     override fun onLoad(ad: RewardedIntegration) {
-        mContext.runOnUiThread { mListener.onLoad(this) }
+        mainScope.launch { mListener.onLoad(this@RewardedAd) }
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        mContext.runOnUiThread { mListener.onFailedToLoad(exception) }
+        mainScope.launch { mListener.onFailedToLoad(exception) }
     }
 
     override fun onClicked() {
-        mContext.runOnUiThread { mListener.onClicked() }
+        mainScope.launch { mListener.onClicked() }
     }
 
     override fun onFailedToShow(code: String?) {
-        mContext.runOnUiThread { mListener.onFailedToShow(code) }
+        mainScope.launch { mListener.onFailedToShow(code) }
     }
 
     override fun onImpression() {
-        mContext.runOnUiThread { mListener.onImpression() }
+        mainScope.launch { mListener.onImpression() }
     }
 
     override fun onEarnedReward(rewardItem: RewardItem) {
-        mContext.runOnUiThread { mListener.onEarnedReward(rewardItem) }
+        mainScope.launch { mListener.onEarnedReward(rewardItem) }
     }
 
 

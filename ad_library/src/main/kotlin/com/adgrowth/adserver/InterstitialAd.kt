@@ -4,9 +4,13 @@ import android.app.Activity
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.integrations.InterstitialManager
 import com.adgrowth.internal.interfaces.integrations.InterstitialIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class InterstitialAd(unitId: String) : InterstitialIntegration.Listener {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mContext: Activity
     private lateinit var mListener: Listener
     private var mAdManager: InterstitialManager
@@ -44,27 +48,27 @@ class InterstitialAd(unitId: String) : InterstitialIntegration.Listener {
 
 
     override fun onDismissed() {
-        mContext.runOnUiThread { mListener.onDismissed() }
+        mainScope.launch { mListener.onDismissed() }
     }
 
     override fun onLoad(ad: InterstitialIntegration) {
-        mContext.runOnUiThread { mListener.onLoad(this) }
+        mainScope.launch { mListener.onLoad(this@InterstitialAd) }
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        mContext.runOnUiThread { mListener.onFailedToLoad(exception) }
+        mainScope.launch { mListener.onFailedToLoad(exception) }
     }
 
     override fun onClicked() {
-        mContext.runOnUiThread { mListener.onClicked() }
+        mainScope.launch { mListener.onClicked() }
     }
 
     override fun onFailedToShow(code: String?) {
-        mContext.runOnUiThread { mListener.onFailedToShow(code) }
+        mainScope.launch { mListener.onFailedToShow(code) }
     }
 
     override fun onImpression() {
-        mContext.runOnUiThread { mListener.onImpression() }
+        mainScope.launch { mListener.onImpression() }
     }
 
     interface Listener {

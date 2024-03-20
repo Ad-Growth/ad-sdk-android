@@ -7,15 +7,18 @@ import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.integrations.InitializationManager
 import com.adgrowth.internal.integrations.adserver.helpers.AdUriHelpers.getUniqueId
 import com.adgrowth.internal.interfaces.managers.AdManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.adgrowth.internal.integrations.admob.services.interfaces.SendAdEventService as ISendAdEventService
 import java.util.*
 
 class SendAdEventService(override val manager: AdManager<*, *>) : ISendAdEventService(manager) {
-
+    private val ioScope = CoroutineScope(Dispatchers.IO)
     private val mHttpClient: HttpClient = HttpClient()
 
     override fun run(type: AdEventType) {
-        Thread {
+        ioScope.launch {
             try {
                 val params = HashMap<String, Any>()
 
@@ -34,6 +37,6 @@ class SendAdEventService(override val manager: AdManager<*, *>) : ISendAdEventSe
                     e.printStackTrace()
                 }
             }
-        }.start()
+        }
     }
 }

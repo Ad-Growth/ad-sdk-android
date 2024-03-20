@@ -11,6 +11,9 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 import com.adgrowth.internal.integrations.admob.services.interfaces.SendAdEventService as ISendAdEventService
 
@@ -18,7 +21,7 @@ class AdMobInterstitial(
     private val getAdService: IGetAdService<InterstitialAd>,
     private val sendAdEventService: ISendAdEventService
 ) : InterstitialIntegration, FullScreenContentCallback() {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mContext: Activity
     private var mAd: InterstitialAd? = null
     private var mListener: InterstitialIntegration.Listener? = null
@@ -26,7 +29,7 @@ class AdMobInterstitial(
 
     override fun show(manager: InterstitialManager) {
         mContext = manager.context;
-        mContext.runOnUiThread {
+        mainScope.launch {
             mAd!!.show(mContext);
         }
     }

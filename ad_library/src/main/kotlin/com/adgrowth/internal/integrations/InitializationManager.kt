@@ -13,6 +13,9 @@ import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.AdServerInitializer
 import com.adgrowth.internal.integrations.adserver.entities.AppMetaData
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.adgrowth.internal.interfaces.managers.InitializationManager as IInitializationManager
 
 
@@ -21,7 +24,7 @@ class InitializationManager(
     override val clientProfile: ClientProfile,
     override var listener: AdServer.Listener
 ) : IInitializationManager(context, clientProfile, listener) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     override val appMetadata: AppMetaData
         get() = APP_META_DATA
 
@@ -86,14 +89,14 @@ class InitializationManager(
 
     private fun notifyInitialized() {
         isInitialized = true
-        context.runOnUiThread {
+        mainScope.launch {
             listener.onInit()
         }
         AdServerEventManager.notifySDKInitialized()
     }
 
     private fun notifyFailed(exception: SDKInitException) {
-        context.runOnUiThread {
+        mainScope.launch {
             listener.onFailed(exception);
         }
     }

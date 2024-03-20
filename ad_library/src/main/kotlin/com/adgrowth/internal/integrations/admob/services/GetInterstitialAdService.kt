@@ -8,13 +8,16 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.CompletableFuture
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 
 
 class GetInterstitialAdService(override val manager: InterstitialManager) :
     IGetAdService<InterstitialAd>(manager) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     override fun run(adRequest: AdRequest): InterstitialAd {
         val context = manager.context
         val future = CompletableFuture<InterstitialAd>()
@@ -31,7 +34,7 @@ class GetInterstitialAdService(override val manager: InterstitialManager) :
             }
         }
 
-        context.runOnUiThread {
+        mainScope.launch {
             InterstitialAd.load(context, manager.unitId, adRequest, listener)
         }
 
