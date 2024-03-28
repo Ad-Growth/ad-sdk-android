@@ -3,9 +3,10 @@ package com.adgrowth.internal.integrations.adserver
 
 import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.adserver.R
+import com.adgrowth.adserver.helpers.LayoutHelpers
+import com.adgrowth.internal.integrations.InitializationManager
 import com.adgrowth.internal.integrations.RewardedManager
 import com.adgrowth.internal.integrations.adserver.enums.AdType
-import com.adgrowth.internal.integrations.adserver.helpers.ScreenHelpers
 import com.adgrowth.internal.integrations.adserver.services.GetAdService
 import com.adgrowth.internal.integrations.adserver.services.SendAdEventService
 import com.adgrowth.internal.interfaces.integrations.RewardedIntegration
@@ -36,7 +37,7 @@ class AdServerRewarded(
         super.beforeLoadCheck()
 
         val options = HashMap<String, Any>()
-        options["orientation"] = ScreenHelpers.getOrientation().toString()
+        options["orientation"] = LayoutHelpers.getAdOrientation().toString()
 
         mAd = getAdService.run(options)
 
@@ -49,6 +50,7 @@ class AdServerRewarded(
     override fun show(manager: RewardedManager) {
         super.show(manager)
     }
+
     override fun setListener(listener: RewardedIntegration.Listener) {
         mListener = listener
     }
@@ -61,6 +63,7 @@ class AdServerRewarded(
         if (remainingTime < 0) {
             if (remainingTime <= TIME_TO_SHOW_TAP_TO_CLOSE) {
                 mDialog?.setButtonLabelText(mContext.getString(R.string.tap_to_close))
+                mDialog?.enableCloseOnTextButton()
                 stopRunningTimer()
             }
             return
@@ -97,7 +100,11 @@ class AdServerRewarded(
 
     companion object {
         const val TEST_UNIT_ID: String = "rewarded"
-        private val TIME_TO_REWARD: Double = BuildConfig.TIME_TO_REWARD
+        private val TIME_TO_REWARD: Double
+            get() {
+                if (InitializationManager.APP_META_DATA.isDevKey || BuildConfig.DEBUG) return 10.0
+                return 30.0
+            }
         private const val TIME_TO_SHOW_TAP_TO_CLOSE = -3
     }
 }
