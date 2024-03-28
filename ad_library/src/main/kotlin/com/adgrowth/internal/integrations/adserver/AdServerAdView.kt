@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
-import com.adgrowth.internal.helpers.LayoutHelper.Companion.getAdLayoutParams
+import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdLayoutParams
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.adserver.entities.Ad
@@ -45,9 +45,7 @@ class AdServerAdView(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        stopRunningTimer()
-        mAdImage?.release()
-        mAdPlayer?.release()
+        release()
     }
 
     override fun setListener(listener: AdViewIntegration.Listener) {
@@ -69,8 +67,8 @@ class AdServerAdView(
         mAd = getAdService.run(options)
 
         if (mAd!!.type !== AdType.BANNER) {
-            throw APIIOException(
-                HTTPStatusCode.FORBIDDEN, AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
+            throw AdRequestException(
+                AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
             )
         }
         mCurrentRunningTime = 0
@@ -162,9 +160,12 @@ class AdServerAdView(
         parent.addView(this)
     }
 
-    fun destroy() {
+    override fun release() {
+        stopRunningTimer()
         mAdImage?.release()
         mAdPlayer?.release()
+        mAdImage = null
+        mAdPlayer = null
     }
 
     override fun onVideoProgressChanged(position: Double, total: Double) {

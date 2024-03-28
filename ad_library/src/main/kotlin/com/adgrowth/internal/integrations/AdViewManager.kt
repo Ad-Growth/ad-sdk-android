@@ -78,7 +78,7 @@ class AdViewManager(
         this.orientation = orientation
         this.mAd = null
 
-       ioScope.launch {
+        ioScope.launch {
             while (mAd == null && builder != null) {
                 try {
                     mAd = builder!!.build(this@AdViewManager).load(this@AdViewManager)
@@ -174,6 +174,8 @@ class AdViewManager(
         stopRefreshTimer()
         context.application.unregisterActivityLifecycleCallbacks(this)
         AdServerEventManager.unregisterFullScreenListener(this)
+        mAd?.release()
+        mAd = null
     }
 
 
@@ -200,19 +202,24 @@ class AdViewManager(
             stopRefreshTimer()
             AdServerEventManager.unregisterFullScreenListener(this)
             context.application?.unregisterActivityLifecycleCallbacks(this)
+            release()
         }
     }
 
     override fun onFullScreenShown(instanceHash: Int) {
-        stopRefreshTimer()
-        mAd?.hide()
-        mAd?.pauseAd()
+        mAd?.apply {
+            stopRefreshTimer()
+            hide()
+            pauseAd()
+        }
     }
 
     override fun onFullScreenDismissed() {
-        startRefreshTimer()
-        mAd?.unhide()
-        mAd?.resumeAd()
+        mAd?.apply {
+            startRefreshTimer()
+            unhide()
+            resumeAd()
+        }
     }
 
 

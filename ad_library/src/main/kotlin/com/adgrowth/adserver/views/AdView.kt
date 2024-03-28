@@ -81,7 +81,7 @@ class AdView : PreviewHandlerView, AdViewIntegration.Listener,
     }
 
     override fun onFinished() {
-        reload()
+        mAdManager?.reload(this)
     }
 
     override fun onDismissed() {
