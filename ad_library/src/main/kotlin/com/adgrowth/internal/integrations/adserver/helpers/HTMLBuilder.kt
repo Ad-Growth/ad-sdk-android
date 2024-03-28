@@ -13,10 +13,12 @@ object HTMLBuilder {
                     #media {display: flex; width: 100%; height: 100%; object-fit: contain; background: transparent;}
                 </style>
             </head>
-            <body>{body}</body>
+            <body>
+                {body}
+            </body>
             <script>
                 function getMediaElement(){ return document.querySelector('#media')};
-                {jscode}
+                //{jscode}
             </script>
             </html>
         """.trimIndent()
@@ -33,7 +35,7 @@ object HTMLBuilder {
                 alt="Image">
              """.trimIndent()
         return buildBaseHTML().replace("\\{body\\}".toRegex(), body)
-            .replace("\\{jscode\\}".toRegex(), "")
+            .replace("//\\{jscode\\}".toRegex(), "")
     }
 
     fun getVideoHTML(): String {
@@ -45,7 +47,7 @@ object HTMLBuilder {
                   muted="false"
                   onclick="ads.onClick()" 
                   onpause="ads.onPause()"
-                  onerror="ads.onError()"
+                  onerror="ads.onVideoError()"
                   onended="ads.onVideoFinished()"
                 >
                   <source src="{media_url}" type="video/mp4" />
@@ -106,6 +108,6 @@ object HTMLBuilder {
             """.trimIndent()
 
         return buildBaseHTML().replace("\\{body\\}".toRegex(), body)
-            .replace("\\{jscode\\}".toRegex(), jscode)
+            .replace("//\\{jscode\\}".toRegex(), jscode)
     }
 }

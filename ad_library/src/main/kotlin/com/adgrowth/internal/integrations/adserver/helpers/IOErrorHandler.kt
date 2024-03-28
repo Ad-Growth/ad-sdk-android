@@ -32,6 +32,7 @@ object IOErrorHandler {
                         AdRequestException.INVALID_CLIENT_KEY
                     )
                 }
+
                 HTTPStatusCode.INTERNAL_ERROR, HTTPStatusCode.NOT_IMPLEMENTED, HTTPStatusCode.BAD_GATEWAY -> {
                     return AdRequestException(
                         AdRequestException.INTERNAL_ERROR
@@ -39,6 +40,8 @@ object IOErrorHandler {
                 }
             }
         }
+        if (e is AdRequestException) return e
+
         return AdRequestException(AdRequestException.UNKNOWN_ERROR)
     }
 }

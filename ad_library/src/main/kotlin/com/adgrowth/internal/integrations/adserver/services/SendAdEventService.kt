@@ -7,6 +7,7 @@ import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.integrations.InitializationManager
+import com.adgrowth.internal.integrations.adserver.AdServerInitializer
 import com.adgrowth.internal.integrations.adserver.helpers.AdUriHelpers.getUniqueId
 import com.adgrowth.internal.integrations.adserver.helpers.AdUriHelpers.openUrl
 import com.adgrowth.internal.integrations.adserver.helpers.AdUriHelpers.replaceURISnippets
@@ -73,7 +74,8 @@ class SendAdEventService(override val manager: AdManager<*, *>) : ISendAdEventSe
 
                 scope.launch {
                     impressionTask.start()
-                    eventTask.start()
+                    if (!InitializationManager.APP_META_DATA.isDevKey)
+                        eventTask.start()
                 }
             }
         }
