@@ -2,7 +2,7 @@ package com.adgrowth.internal.integrations.admob.services
 
 import com.adgrowth.adserver.enums.AdSize as AdServerAdSize
 import com.adgrowth.internal.exceptions.APIIOException
-import com.adgrowth.internal.helpers.LayoutHelper.Companion.getAdLayoutParams
+import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdViewLayoutParams
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.InitializationManager
@@ -47,7 +47,7 @@ class GetAdViewService(override val manager: AdViewManager) :
         mainScope.launch {
             ad = AdView(context)
             ad.setAdSize(adSize)
-            ad.layoutParams = getAdLayoutParams(manager.orientation, manager.size)
+            ad.layoutParams = getAdViewLayoutParams(manager.orientation, manager.size)
 
             ad.adListener = listener
             ad.adUnitId = manager.unitId

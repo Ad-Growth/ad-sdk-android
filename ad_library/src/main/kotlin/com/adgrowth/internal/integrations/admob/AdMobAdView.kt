@@ -1,10 +1,9 @@
 package com.adgrowth.internal.integrations.admob
 
-import android.os.Handler
 import android.view.ViewGroup
 import com.adgrowth.adserver.AdServer
 import com.adgrowth.internal.enums.AdEventType
-import com.adgrowth.internal.helpers.LayoutHelper
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.admob.services.GetAdViewService
 import com.adgrowth.internal.integrations.admob.services.SendAdEventService
@@ -63,7 +62,7 @@ class AdMobAdView(
         profile.interests.forEach { interest ->
             mAdRequest.addKeyword(interest)
         }
-        layoutParams = LayoutHelper.getAdLayoutParams(manager.orientation, manager.size)
+        layoutParams = LayoutHelpers.getAdViewLayoutParams(manager.orientation, manager.size)
         mAd = getAdService.run(mAdRequest.build());
         mAd!!.adListener = adViewListener
         return this
@@ -72,12 +71,14 @@ class AdMobAdView(
     override fun hide() {
         mainScope.launch {
             visibility = GONE
+            mAd?.visibility = GONE
         }
     }
 
     override fun unhide() {
         mainScope.launch {
             visibility = VISIBLE
+            mAd?.visibility = VISIBLE
         }
     }
 
@@ -97,6 +98,11 @@ class AdMobAdView(
         this.addView(mAd)
         if (parent.indexOfChild(this) >= 0) parent.removeView(this)
         parent.addView(this)
+    }
+
+    override fun release() {
+        mAd?.destroy()
+        mAd = null
     }
 
     override fun setListener(listener: Listener) {

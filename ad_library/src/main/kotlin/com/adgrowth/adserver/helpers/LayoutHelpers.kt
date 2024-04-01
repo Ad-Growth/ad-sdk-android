@@ -12,8 +12,8 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.os.Build
 import android.view.Surface
-import android.view.ViewGroup.LayoutParams
 import android.view.WindowInsets
+import android.widget.FrameLayout
 import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.adserver.enums.AdSize
 
@@ -25,7 +25,7 @@ class LayoutHelpers(private val context: Activity) {
     init {
         currentOrientation = context.resources.configuration.orientation
         currentRotation = decorView.display.rotation
-        baseEdgeInsets = getBaseEdgeInsets()
+        setScreenInfo()
         currentEdgeInsets = getRectByRotation(decorView.display.rotation)
     }
 
@@ -52,70 +52,82 @@ class LayoutHelpers(private val context: Activity) {
     }
 
     // get base insets and correct it to portrait 0º rotation dimensions
-    private fun getBaseEdgeInsets(): Rect {
+    private fun setScreenInfo(): Rect {
         val insets = Rect(0, 0, 0, 0)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val displayCutout =
-                context.window.decorView.rootWindowInsets.getInsets(WindowInsets.Type.tappableElement())
+                context.window.decorView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout())
+            val systemBars =
+                context.window.decorView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
 
-            insets.top = displayCutout.top
-            insets.right = displayCutout.right
-            insets.bottom = displayCutout.bottom
-            insets.left = displayCutout.left
+            notchHeight = 0
+            statusBarHeight = 0
+            systemNavigationHeight = 0
+
+            when (decorView.display.rotation) {
+                Surface.ROTATION_90 -> {
+                    notchHeight = displayCutout.left
+                    statusBarHeight = systemBars.top
+                    systemNavigationHeight = systemBars.right
+                }
+
+                Surface.ROTATION_270 -> {
+                    notchHeight = displayCutout.right
+                    statusBarHeight = systemBars.top
+                    systemNavigationHeight = systemBars.left
+
+                }
+
+                Surface.ROTATION_180 -> {
+                    notchHeight = displayCutout.bottom
+                    statusBarHeight = systemBars.top
+                    systemNavigationHeight = systemBars.bottom
+
+                }
+                // Surface.ROTATION_0
+                else -> {
+                    notchHeight = displayCutout.top
+                    statusBarHeight = systemBars.top
+                    systemNavigationHeight = systemBars.bottom
+                }
+            }
         }
 
-        return when (decorView.display.rotation) {
-            Surface.ROTATION_90 -> Rect(
-                insets.top,
-                insets.left,
-                insets.bottom,
-                insets.right
-            )
-
-            Surface.ROTATION_270 -> Rect(
-                insets.top,
-                insets.right,
-                insets.bottom,
-                insets.left
-            )
-
-            Surface.ROTATION_180 -> Rect(
-                insets.right,
-                insets.bottom,
-                insets.left,
-                insets.top
-            )
-            // Surface.ROTATION_0
-            else -> insets
-        }
+        return insets
     }
+
     // Get insets by provided rotation with base insets
     private fun getRectByRotation(rotation: Int): Rect {
         return when (rotation) {
-
-            Surface.ROTATION_180 -> Rect(
-                baseEdgeInsets.right,
-                baseEdgeInsets.bottom,
-                baseEdgeInsets.left,
-                baseEdgeInsets.top
-            )
-
+            // landscape
             Surface.ROTATION_90 -> Rect(
-                baseEdgeInsets.top,
-                baseEdgeInsets.right,
-                baseEdgeInsets.bottom,
-                baseEdgeInsets.left
+                notchHeight,
+                statusBarHeight,
+                systemNavigationHeight,
+                0
             )
-
+            // landscape reverse
             Surface.ROTATION_270 -> Rect(
-                baseEdgeInsets.bottom,
-                baseEdgeInsets.left,
-                baseEdgeInsets.top,
-                baseEdgeInsets.right
+                systemNavigationHeight,
+                statusBarHeight,
+                notchHeight,
+                0
             )
-            // Surface.ROTATION_0
-            else -> baseEdgeInsets
+            // portrait reverse
+            Surface.ROTATION_180 -> Rect(
+                0,                                                               // left
+                systemNavigationHeight,                                              // top
+                0,                                                              // right
+                if (notchHeight > statusBarHeight) notchHeight else statusBarHeight, // bottom
+            )
+            // portrait
+            else -> Rect(
+                0,
+                if (notchHeight > statusBarHeight) notchHeight else statusBarHeight,
+                0,
+                systemNavigationHeight
+            )
         }
     }
 
@@ -137,7 +149,11 @@ class LayoutHelpers(private val context: Activity) {
     }
 
     companion object {
-        fun getAdLayoutParams(orientation: AdOrientation, size: AdSize): LayoutParams {
+        @JvmStatic
+        fun getAdViewLayoutParams(
+            orientation: AdOrientation,
+            size: AdSize
+        ): FrameLayout.LayoutParams {
             val width: Int
             val height: Int
 
@@ -168,21 +184,49 @@ class LayoutHelpers(private val context: Activity) {
                 }
             }
 
-            if (orientation == AdOrientation.PORTRAIT) return LayoutParams(
+            if (orientation == AdOrientation.PORTRAIT) return FrameLayout.LayoutParams(
                 dpToPx(height), dpToPx(width)
             )
 
-            return LayoutParams(dpToPx(width), dpToPx(height))
+            return FrameLayout.LayoutParams(dpToPx(width), dpToPx(height))
         }
 
+        @JvmStatic
         fun dpToPx(dp: Int): Int {
             return (dp * Resources.getSystem().displayMetrics.density).toInt()
         }
 
-        private var baseEdgeInsets: Rect = Rect()
+        @JvmStatic
         var currentEdgeInsets: Rect = Rect()
+            private set
+
+        @JvmStatic
         var currentOrientation: Int = Surface.ROTATION_0
+            private set
+
+        @JvmStatic
         var currentRotation: Int = Configuration.ORIENTATION_PORTRAIT
+            private set
+
+        @JvmStatic
+        var notchHeight = 0
+            private set
+
+        @JvmStatic
+        var statusBarHeight = 0
+            private set
+
+        @JvmStatic
+        var systemNavigationHeight = 0
+            private set
+
+        @JvmStatic
+        var displayWidth = Resources.getSystem().displayMetrics.widthPixels
+            private set
+
+        @JvmStatic
+        var displayHeight = Resources.getSystem().displayMetrics.heightPixels
+            private set
 
         private const val BANNER_WIDTH = 320
         private const val BANNER_HEIGHT = 50
@@ -200,23 +244,30 @@ class LayoutHelpers(private val context: Activity) {
         private const val MEDIUM_RECTANGLE_HEIGHT = 250
 
         private val edgeInsetsListeners = mutableListOf<InsetListener>()
+
+
+        @JvmStatic
         fun addEdgeInsetsListener(listener: InsetListener) {
             edgeInsetsListeners.add(listener)
         }
 
+        @JvmStatic
         fun removeListener(listener: InsetListener) {
             edgeInsetsListeners.remove(listener)
         }
 
+        @JvmStatic
         fun getAdOrientation(): AdOrientation {
             val orientation = Resources.getSystem().configuration.orientation
             return if (orientation == Configuration.ORIENTATION_LANDSCAPE) AdOrientation.LANDSCAPE else AdOrientation.PORTRAIT
         }
 
+        @JvmStatic
         fun getScreenRotation(context: Activity): Int {
             return context.window.decorView.display.rotation
         }
 
+        @JvmStatic
         @SuppressLint("SourceLockedOrientationActivity")
         fun setScreenRotation(context: Activity, orientation: AdOrientation?) {
             val currentRotation = getScreenRotation(context)

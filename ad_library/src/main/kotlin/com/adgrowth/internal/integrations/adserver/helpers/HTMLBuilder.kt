@@ -45,6 +45,7 @@ object HTMLBuilder {
                 <video
                   id="media" 
                   muted="false"
+                  preload="auto"
                   onclick="ads.onClick()" 
                   onpause="ads.onPause()"
                   onerror="ads.onVideoError()"
@@ -79,13 +80,18 @@ object HTMLBuilder {
                   });
             
                   var notifiedOnVideoReadyOnce = false;
-            
-                  player.addEventListener("canplay", () => {
-                    if (!notifiedOnVideoReadyOnce) {
+                 
+                  player.addEventListener("progress", () => {
+                    let bufferedTime = 0;
+                    for (let i = 0; i < player.buffered.length; i++) {
+                      bufferedTime += player.buffered.end(i) - player.buffered.start(i);
+                    }
+                    if (!notifiedOnVideoReadyOnce && bufferedTime > 2) {
                       notifiedOnVideoReadyOnce = true;
                       ads.onVideoReady(player.duration);
                     }
                   });
+                  
                   const THROTTLE_TIME_IN_SECS = 0.5;
             
                   player.addEventListener("timeupdate", () => {

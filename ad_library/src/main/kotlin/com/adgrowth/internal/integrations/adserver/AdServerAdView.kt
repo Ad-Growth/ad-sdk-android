@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
-import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdLayoutParams
+import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdViewLayoutParams
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.adserver.entities.Ad
@@ -61,7 +61,7 @@ class AdServerAdView(
         options["orientation"] = manager.orientation.toString()
         options["dimension"] = manager.size.toString()
 
-        layoutParams = getAdLayoutParams(manager.orientation, manager.size)
+        layoutParams = getAdViewLayoutParams(manager.orientation, manager.size)
 
 
         mAd = getAdService.run(options)

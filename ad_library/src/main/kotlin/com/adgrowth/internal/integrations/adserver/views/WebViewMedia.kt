@@ -3,8 +3,6 @@ package com.adgrowth.internal.integrations.adserver.views
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Color
-import android.os.Handler
-import android.os.Looper
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -33,7 +31,16 @@ abstract class WebViewMedia(
             mWebView?.apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = false
-                webViewClient = WebViewClient()
+                settings.mediaPlaybackRequiresUserGesture = false
+
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView?, request: WebResourceRequest?
+                    ): Boolean {
+                        return false
+                    }
+
+                }
                 setBackgroundColor(Color.TRANSPARENT)
                 addJavascriptInterface(javascriptInterface, JAVASCRIPT_INTERFACE_OBJECT)
                 preload()
@@ -46,24 +53,13 @@ abstract class WebViewMedia(
         mWebView?.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
     }
 
-
     fun addInto(container: ViewGroup) {
         _parent = container
         mWebView?.let { webView ->
-            webView.webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(
-                    view: WebView?, request: WebResourceRequest?
-                ): Boolean {
-                    return false
-                }
-            }
-
             if (webView.parent != null) (webView.parent as ViewGroup).removeView(webView)
-
             _parent!!.addView(webView)
         }
     }
-
 
     fun release() {
         mWebView?.let {
@@ -77,7 +73,6 @@ abstract class WebViewMedia(
             } catch (_: Exception) {
 
             }
-
         }
     }
 

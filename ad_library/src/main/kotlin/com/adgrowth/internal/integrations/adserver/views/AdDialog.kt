@@ -3,30 +3,39 @@ package com.adgrowth.internal.integrations.adserver.views
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Rect
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.window.OnBackInvokedCallback
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 import com.adgrowth.adserver.R
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class AdDialog(private val context: Activity) : FrameLayout(context) {
+class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelpers.InsetListener {
+    private lateinit var mOnCloseListener: OnClickListener
+    private val mCloseContainer: LinearLayout
     private var releasing: Boolean = false
     private val mainScope = CoroutineScope(Dispatchers.Main)
     private val mProgressBar: ProgressBar
     private val mCloseBtn: ImageView
     private val mCloseTextView: TextView
     private var mOriginalSystemUiVisibility = 0
+    private var mCanDismiss = false
     private var mOnDismissListener: OnDismissListener = object : OnDismissListener {
         override fun onDismiss() {}
     }
@@ -43,16 +52,20 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
 
         foregroundGravity = Gravity.CENTER
 
-        mCloseTextView = findViewById<View>(R.id.close_text_view) as TextView
-        mCloseBtn = findViewById<View>(R.id.close_btn) as ImageView
+        mCloseContainer = view.findViewById(R.id.ad_close_container)
+        mCloseTextView = findViewById(R.id.close_text_view)
+        mCloseBtn = findViewById(R.id.close_btn)
         mCloseBtn.isEnabled = false
-        mProgressBar = findViewById<View>(R.id.video_progress) as ProgressBar
+        mProgressBar = findViewById(R.id.video_progress)
         mProgressBar.progress = 0
         mProgressBar.max = 100
+        LayoutHelpers.addEdgeInsetsListener(this)
+        refreshLayoutParams(LayoutHelpers.currentEdgeInsets)
 
     }
 
-    fun setOnCloseListener(onCloseListener: OnClickListener?) {
+    fun setOnCloseListener(onCloseListener: OnClickListener) {
+        mOnCloseListener = onCloseListener
         mCloseBtn.setOnClickListener(onCloseListener)
     }
 
@@ -67,6 +80,14 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
         mainScope.launch {
             mCloseBtn.isEnabled = true
             mCloseBtn.alpha = 1f
+            mCanDismiss = true
+        }
+    }
+
+    fun enableCloseOnTextButton() {
+        mainScope.launch {
+            mCloseTextView.isEnabled = true
+            mCloseTextView.setOnClickListener(mOnCloseListener)
         }
     }
 
@@ -98,8 +119,19 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
     }
 
     fun show() {
-        hideKeyboardAndClearFocus(context);
+        hideKeyboardAndClearFocus(context)
         mainScope.launch {
+            isFocusableInTouchMode = true
+            requestFocus()
+            setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+
+                    if (mCanDismiss) dismiss()
+
+                    return@setOnKeyListener true
+                }
+                false
+            }
             attachToWindow()
         }
     }
@@ -107,9 +139,8 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         mainScope.launch {
-            val decorView = context.window.decorView
-            mOriginalSystemUiVisibility = decorView.systemUiVisibility
-            decorView.systemUiVisibility = SYSTEM_UI_FLAG_FULLSCREEN
+
+            hideSystemUI()
             visibility = VISIBLE
             mOnShowListener.onShow()
         }
@@ -118,10 +149,8 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
     fun dismiss() {
         releasing = true
         mainScope.launch {
-            val decorView = context.window.decorView
-            decorView.systemUiVisibility = mOriginalSystemUiVisibility
-            visibility = GONE
-
+            LayoutHelpers.removeListener(this@AdDialog)
+            showSystemUI()
             if (parent != null) {
                 (parent as ViewGroup).removeView(this@AdDialog)
             }
@@ -131,16 +160,14 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        if (releasing)
-            mainScope.launch {
-                mOnDismissListener.onDismiss()
-            }
+        if (releasing) mainScope.launch {
+            mOnDismissListener.onDismiss()
+        }
     }
 
     private fun attachToWindow() {
         val layoutParams = LayoutParams(
-            LayoutParams.MATCH_PARENT,
-            LayoutParams.MATCH_PARENT
+            LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
         )
 
         if (parent != null) {
@@ -150,8 +177,7 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
         if (context.window.decorView is ViewGroup) {
             val view = context.window.decorView as ViewGroup
             view.addView(this, layoutParams)
-        } else
-            context.window.addContentView(this, layoutParams)
+        } else context.window.addContentView(this, layoutParams)
     }
 
     fun setOnShowListener(listener: OnShowListener) {
@@ -170,6 +196,24 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
         fun onShow()
     }
 
+    private fun hideSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(context.window, false)
+        WindowInsetsControllerCompat(context.window, this).let {
+            it.hide(WindowInsetsCompat.Type.systemBars())
+            mOriginalSystemUiVisibility = it.systemBarsBehavior
+            it.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private fun showSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(context.window, true)
+        WindowInsetsControllerCompat(context.window, this).let {
+            it.show(WindowInsetsCompat.Type.systemBars())
+            it.systemBarsBehavior = mOriginalSystemUiVisibility
+        }
+    }
+
     private fun hideKeyboardAndClearFocus(activity: Activity) {
         val focusedView = activity.currentFocus
         if (focusedView != null) {
@@ -178,5 +222,14 @@ class AdDialog(private val context: Activity) : FrameLayout(context) {
             inputMethodManager.hideSoftInputFromWindow(focusedView.windowToken, 0)
             focusedView.clearFocus()
         }
+    }
+
+    private fun refreshLayoutParams(insets: Rect) {
+        mCloseContainer.translationY = (LayoutHelpers.dpToPx(16) + insets.top).toFloat()
+        mCloseContainer.translationX = (-(LayoutHelpers.dpToPx(16) + insets.right)).toFloat()
+    }
+
+    override fun onInsetsChanged(insets: Rect) {
+        refreshLayoutParams(insets)
     }
 }
