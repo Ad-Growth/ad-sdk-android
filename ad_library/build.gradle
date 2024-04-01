@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-def sdkVersion = "1.1.1"
+def sdkVersion = "1.2.0"
 
 android {
     namespace 'com.adgrowth.adserver'
