@@ -29,10 +29,13 @@ class GetAdService(override val manager: AdManager<*, *>) : IGetAdServerAdServic
 
         val clientAddress = profile.clientAddress
 
-        params["city"] = clientAddress.city ?: ""
-        params["state"] = clientAddress.state ?: ""
-        params["country"] = clientAddress.country ?: ""
-        params["advertising_id"] = com.adgrowth.internal.integrations.InitializationManager.ADVERTISING_ID
+        if (!clientAddress.city.isNullOrBlank() && !clientAddress.state.isNullOrBlank() && !clientAddress.country.isNullOrBlank()) {
+            params["city"] = clientAddress.city!!
+            params["state"] = clientAddress.state!!
+            params["country"] = clientAddress.country!!
+        }
+        params["advertising_id"] =
+            com.adgrowth.internal.integrations.InitializationManager.ADVERTISING_ID
 
         val response = mHttpClient["/ads/adverts/search", params]
 
