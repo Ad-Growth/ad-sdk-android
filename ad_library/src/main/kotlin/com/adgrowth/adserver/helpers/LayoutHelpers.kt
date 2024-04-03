@@ -10,12 +10,8 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Rect
-import android.os.Build
 import android.view.Surface
-import android.view.WindowInsets
 import android.widget.FrameLayout
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.adserver.enums.AdSize
