@@ -3,6 +3,7 @@ package com.adgrowth.internal.integrations.adserver.entities
 import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.adserver.entities.RewardItem
 import com.adgrowth.adserver.enums.AdOrientation
+import com.adgrowth.internal.integrations.InitializationManager
 import com.adgrowth.internal.integrations.adserver.enums.AdMediaType
 import com.adgrowth.internal.integrations.adserver.enums.AdType
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
@@ -74,7 +75,11 @@ class Ad(json: JSONObject) {
         @JvmField
         val AUTO_REFRESH_RATE = null
         const val DISABLED_REFRESH_RATE = 0.0
-        val DEFAULT_AD_DURATION: Double = BuildConfig.DEFAULT_AD_DURATION
+        val DEFAULT_AD_DURATION: Double
+            get() {
+                if (InitializationManager.APP_META_DATA.isDevKey || BuildConfig.DEBUG) return 10.0
+                return 30.0
+            }
         const val DEFAULT_REWARD_VALUE = 1
     }
 }

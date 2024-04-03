@@ -4,12 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
-import android.widget.LinearLayout
 import android.widget.TextView
 import com.adgrowth.adserver.R
 import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.adserver.enums.AdSize
-import com.adgrowth.internal.helpers.LayoutHelper.Companion.getAdLayoutParams
+import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdViewLayoutParams
 import com.adgrowth.internal.integrations.InitializationManager
 
 
@@ -86,7 +85,7 @@ abstract class PreviewHandlerView : CenteredChildrenView {
     private fun setPreviewText(text: String, context: Context) {
         if (mPreviewText == null) {
             mPreviewText = TextView(context)
-            mPreviewText!!.layoutParams = getAdLayoutParams(orientation, size)
+            mPreviewText!!.layoutParams = getAdViewLayoutParams(orientation, size)
             mPreviewText!!.background = resources.getDrawable(R.drawable.border_square, null)
             mPreviewText!!.setTextColor(resources.getColor(R.color.black, null))
             mPreviewText!!.text = text

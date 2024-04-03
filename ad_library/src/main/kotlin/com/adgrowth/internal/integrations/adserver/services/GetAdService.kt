@@ -5,6 +5,7 @@ import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HttpClient
 import com.adgrowth.internal.interfaces.managers.AdManager
+import com.adgrowth.internal.interfaces.managers.InitializationManager
 import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAdService as IGetAdServerAdService
 
 class GetAdService(override val manager: AdManager<*, *>) : IGetAdServerAdService(manager) {
@@ -28,9 +29,13 @@ class GetAdService(override val manager: AdManager<*, *>) : IGetAdServerAdServic
 
         val clientAddress = profile.clientAddress
 
-        params["city"] = clientAddress.city ?: ""
-        params["state"] = clientAddress.state ?: ""
-        params["country"] = clientAddress.country ?: ""
+        if (!clientAddress.city.isNullOrBlank() && !clientAddress.state.isNullOrBlank() && !clientAddress.country.isNullOrBlank()) {
+            params["city"] = clientAddress.city!!
+            params["state"] = clientAddress.state!!
+            params["country"] = clientAddress.country!!
+        }
+        params["advertising_id"] =
+            com.adgrowth.internal.integrations.InitializationManager.ADVERTISING_ID
 
         val response = mHttpClient["/ads/adverts/search", params]
 

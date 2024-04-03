@@ -2,7 +2,6 @@ package com.adgrowth.internal.integrations.adserver
 
 import android.app.Activity
 import android.app.Application
-import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
@@ -10,24 +9,22 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import com.adgrowth.adserver.AdServer
 import com.adgrowth.adserver.R
-import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.adserver.exceptions.AdRequestException
-import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
-import com.adgrowth.internal.integrations.adserver.helpers.ScreenHelpers.getOrientation
-import com.adgrowth.internal.integrations.adserver.entities.Ad
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HTTPStatusCode
+import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.integrations.adserver.enums.AdMediaType
 import com.adgrowth.internal.integrations.adserver.enums.AdType
-import com.adgrowth.internal.integrations.adserver.helpers.ScreenHelpers.setOrientation
+import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
 import com.adgrowth.internal.integrations.adserver.services.interfaces.SendAdEventService
-import com.adgrowth.internal.interfaces.integrations.AdIntegration
 import com.adgrowth.internal.integrations.adserver.views.AdDialog
 import com.adgrowth.internal.integrations.adserver.views.AdImage
 import com.adgrowth.internal.integrations.adserver.views.AdPlayer
-import com.adgrowth.internal.interfaces.managers.AdManager
+import com.adgrowth.internal.interfaces.integrations.AdIntegration
 import com.adgrowth.internal.interfaces.listeners.AdListener
+import com.adgrowth.internal.interfaces.managers.AdManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,13 +43,13 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     var mFailedToLoad = false
 
     protected var mDialog: AdDialog? = null
-    private var lastOrientation: AdOrientation? = null
+    private var lastRotation: Int? = null
     private var mRunningTimer: Timer? = Timer()
 
     protected lateinit var mAd: Ad
 
     protected var mCurrentRunningTime = 0
-    protected var mAdDuration: Double = Ad.DEFAULT_AD_DURATION.toDouble()
+    protected var mAdDuration: Double = Ad.DEFAULT_AD_DURATION
     protected var mVideoIsReady = false
     protected var mImageIsReady = false
     protected var mAdIsReady = false
@@ -148,8 +145,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     }
 
     protected fun afterLoadCheck(ad: Ad, type: AdType): Boolean {
-        if (ad.type !== type) throw APIIOException(
-            403, AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
+        if (ad.type !== type) throw AdRequestException(
+            AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
         )
         return true
     }
@@ -178,8 +175,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
             mVideoIsReady = true
             if (mImageIsReady) mAdIsReady = true
             if (mAdIsReady) {
-                @Suppress("UNCHECKED_CAST")
-                mLoadFuture.complete(this@FullScreenAd as T)
+                @Suppress("UNCHECKED_CAST") mLoadFuture.complete(this@FullScreenAd as T)
             }
         }
 
@@ -269,27 +265,29 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
     override fun onDismiss() {
         mContext.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        if (lastOrientation != null) setOrientation(mContext, lastOrientation!!)
+        if (lastRotation != null) LayoutHelpers.setScreenRotation(mContext, null)
 
         mContext.application.unregisterActivityLifecycleCallbacks(mActivityLifecycleListener)
         mContext.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
         mAdPlayer?.release()
+        mAdImage?.release()
 
         AdServerEventManager.notifyFullScreenDismissed()
         stopRunningTimer()
-        mAdPlayer?.release()
-        mAdImage?.release()
 
-        mainScope.launch { mListener!!.onDismissed() }
+
+        mainScope.launch {
+            mListener!!.onDismissed()
+        }
     }
 
     override fun onShow() {
         mainScope.launch { mListener!!.onImpression() }
 
-        lastOrientation = getOrientation()
+        lastRotation = LayoutHelpers.getScreenRotation(mContext)
 
-        setOrientation(mContext, mAd.orientation)
+        LayoutHelpers.setScreenRotation(mContext, mAd.orientation)
 
         mContext.application.registerActivityLifecycleCallbacks(mActivityLifecycleListener)
         mContext.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED

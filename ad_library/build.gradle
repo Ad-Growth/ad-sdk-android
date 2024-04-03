@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-def sdkVersion = "1.1.1"
+def sdkVersion = "1.2.0"
 
 android {
     namespace 'com.adgrowth.adserver'
@@ -32,28 +32,20 @@ android {
         release {
             minifyEnabled true
             buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
-            buildConfigField("Double", "DEFAULT_AD_DURATION", "30.0")
-            buildConfigField("Double", "TIME_TO_REWARD", "30.0")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
         adgrowth_hml {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"')
-            buildConfigField("Double", "DEFAULT_AD_DURATION", "10.0")
-            buildConfigField("Double", "TIME_TO_REWARD", "10.0")
         }
 
         adgrowth_dev {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-dev.adgrowth.com"')
-            buildConfigField("Double", "DEFAULT_AD_DURATION", "10.0")
-            buildConfigField("Double", "TIME_TO_REWARD", "10.0")
         }
 
         debug {
             matchingFallbacks = ['release']
             buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
-            buildConfigField("Double", "DEFAULT_AD_DURATION", "10.0")
-            buildConfigField("Double", "TIME_TO_REWARD", "10.0")
         }
 
     }

@@ -15,6 +15,7 @@ abstract class AdViewIntegration(context: Context) : CenteredChildrenView(contex
     abstract fun resumeAd()
     abstract fun pauseAd()
     abstract fun placeIn(parent: ViewGroup)
+    abstract fun release()
 
     interface Listener : AdListener<AdViewIntegration> {
         fun onFinished()

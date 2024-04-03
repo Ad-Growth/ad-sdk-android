@@ -13,10 +13,12 @@ object HTMLBuilder {
                     #media {display: flex; width: 100%; height: 100%; object-fit: contain; background: transparent;}
                 </style>
             </head>
-            <body>{body}</body>
+            <body>
+                {body}
+            </body>
             <script>
                 function getMediaElement(){ return document.querySelector('#media')};
-                {jscode}
+                //{jscode}
             </script>
             </html>
         """.trimIndent()
@@ -33,7 +35,7 @@ object HTMLBuilder {
                 alt="Image">
              """.trimIndent()
         return buildBaseHTML().replace("\\{body\\}".toRegex(), body)
-            .replace("\\{jscode\\}".toRegex(), "")
+            .replace("//\\{jscode\\}".toRegex(), "")
     }
 
     fun getVideoHTML(): String {
@@ -43,9 +45,10 @@ object HTMLBuilder {
                 <video
                   id="media" 
                   muted="false"
+                  preload="auto"
                   onclick="ads.onClick()" 
                   onpause="ads.onPause()"
-                  onerror="ads.onError()"
+                  onerror="ads.onVideoError()"
                   onended="ads.onVideoFinished()"
                 >
                   <source src="{media_url}" type="video/mp4" />
@@ -77,13 +80,18 @@ object HTMLBuilder {
                   });
             
                   var notifiedOnVideoReadyOnce = false;
-            
-                  player.addEventListener("canplay", () => {
-                    if (!notifiedOnVideoReadyOnce) {
+                 
+                  player.addEventListener("progress", () => {
+                    let bufferedTime = 0;
+                    for (let i = 0; i < player.buffered.length; i++) {
+                      bufferedTime += player.buffered.end(i) - player.buffered.start(i);
+                    }
+                    if (!notifiedOnVideoReadyOnce && bufferedTime > 2) {
                       notifiedOnVideoReadyOnce = true;
                       ads.onVideoReady(player.duration);
                     }
                   });
+                  
                   const THROTTLE_TIME_IN_SECS = 0.5;
             
                   player.addEventListener("timeupdate", () => {
@@ -106,6 +114,6 @@ object HTMLBuilder {
             """.trimIndent()
 
         return buildBaseHTML().replace("\\{body\\}".toRegex(), body)
-            .replace("\\{jscode\\}".toRegex(), jscode)
+            .replace("//\\{jscode\\}".toRegex(), jscode)
     }
 }

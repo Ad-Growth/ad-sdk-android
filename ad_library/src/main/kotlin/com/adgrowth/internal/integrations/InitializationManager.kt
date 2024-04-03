@@ -7,6 +7,7 @@ import com.adgrowth.adserver.AdServer
 import com.adgrowth.adserver.entities.ClientProfile
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.adserver.exceptions.SDKInitException
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
@@ -24,11 +25,13 @@ class InitializationManager(
     override val clientProfile: ClientProfile,
     override var listener: AdServer.Listener
 ) : IInitializationManager(context, clientProfile, listener) {
+    private val layoutHelper = LayoutHelpers(context)
     private val mainScope = CoroutineScope(Dispatchers.Main)
     override val appMetadata: AppMetaData
         get() = APP_META_DATA
 
     init {
+        layoutHelper.startEdgeInsetsObserver()
         try {
             APP_PACKAGE_NAME = context.packageName
             CLIENT_KEY = getClientKey(context)
