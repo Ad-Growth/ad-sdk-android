@@ -10,10 +10,9 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Rect
-import android.os.Build
 import android.view.Surface
-import android.view.WindowInsets
 import android.widget.FrameLayout
+import androidx.core.view.WindowInsetsCompat
 import com.adgrowth.adserver.enums.AdOrientation
 import com.adgrowth.adserver.enums.AdSize
 
@@ -25,7 +24,6 @@ class LayoutHelpers(private val context: Activity) {
     init {
         currentOrientation = context.resources.configuration.orientation
         currentRotation = decorView.display.rotation
-        setScreenInfo()
         currentEdgeInsets = getRectByRotation(decorView.display.rotation)
     }
 
@@ -33,7 +31,6 @@ class LayoutHelpers(private val context: Activity) {
 
         override fun onReceive(context: Context, myIntent: Intent) {
             if (myIntent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
-
                 val rect = getRectByRotation(decorView.display.rotation)
 
                 currentEdgeInsets = rect
@@ -52,53 +49,49 @@ class LayoutHelpers(private val context: Activity) {
     }
 
     // get base insets and correct it to portrait 0º rotation dimensions
-    private fun setScreenInfo(): Rect {
-        val insets = Rect(0, 0, 0, 0)
+    private fun setScreenInfo() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val displayCutout =
-                context.window.decorView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout())
-            val systemBars =
-                context.window.decorView.rootWindowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
+        val windowInsetsCompat =  WindowInsetsCompat.toWindowInsetsCompat(context.window.decorView.rootWindowInsets)
+        val displayCutout = windowInsetsCompat.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.displayCutout());
+        val systemBars = windowInsetsCompat.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars());
 
-            notchHeight = 0
-            statusBarHeight = 0
-            systemNavigationHeight = 0
+        notchHeight = 0
+        statusBarHeight = 0
+        systemNavigationHeight = 0
 
-            when (decorView.display.rotation) {
-                Surface.ROTATION_90 -> {
-                    notchHeight = displayCutout.left
-                    statusBarHeight = systemBars.top
-                    systemNavigationHeight = systemBars.right
-                }
+        when (decorView.display.rotation) {
+            Surface.ROTATION_90 -> {
+                notchHeight = displayCutout.left
+                statusBarHeight = systemBars.top
+                systemNavigationHeight = systemBars.right
+            }
 
-                Surface.ROTATION_270 -> {
-                    notchHeight = displayCutout.right
-                    statusBarHeight = systemBars.top
-                    systemNavigationHeight = systemBars.left
+            Surface.ROTATION_270 -> {
+                notchHeight = displayCutout.right
+                statusBarHeight = systemBars.top
+                systemNavigationHeight = systemBars.left
 
-                }
+            }
 
-                Surface.ROTATION_180 -> {
-                    notchHeight = displayCutout.bottom
-                    statusBarHeight = systemBars.top
-                    systemNavigationHeight = systemBars.bottom
+            Surface.ROTATION_180 -> {
+                notchHeight = displayCutout.bottom
+                statusBarHeight = systemBars.top
+                systemNavigationHeight = systemBars.bottom
 
-                }
-                // Surface.ROTATION_0
-                else -> {
-                    notchHeight = displayCutout.top
-                    statusBarHeight = systemBars.top
-                    systemNavigationHeight = systemBars.bottom
-                }
+            }
+            // Surface.ROTATION_0
+            else -> {
+                notchHeight = displayCutout.top
+                statusBarHeight = systemBars.top
+                systemNavigationHeight = systemBars.bottom
             }
         }
-
-        return insets
     }
 
     // Get insets by provided rotation with base insets
     private fun getRectByRotation(rotation: Int): Rect {
+        setScreenInfo()
+
         return when (rotation) {
             // landscape
             Surface.ROTATION_90 -> Rect(
