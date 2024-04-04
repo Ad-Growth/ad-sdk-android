@@ -2,10 +2,9 @@ package com.adgrowth.internal.http
 
 
 import com.adgrowth.adserver.BuildConfig
-import com.adgrowth.internal.integrations.adserver.helpers.QueryStringHelpers
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.integrations.InitializationManager
-
+import com.adgrowth.internal.integrations.adserver.helpers.QueryStringHelpers
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -26,7 +25,9 @@ class HttpClient {
     @Throws(APIIOException::class)
     operator fun get(path: String, params: HashMap<String, Any> = HashMap()): JSONObject {
         val query = QueryStringHelpers.encode(params)
-        val urlString = mBaseUrl + path + query
+        var urlString = mBaseUrl + path
+
+        urlString += if (urlString.contains("?")) query else "?$query"
 
         return try {
             val url = URL(urlString)

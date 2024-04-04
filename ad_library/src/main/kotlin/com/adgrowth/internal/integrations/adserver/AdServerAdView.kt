@@ -3,9 +3,9 @@ package com.adgrowth.internal.integrations.adserver
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import com.adgrowth.adserver.exceptions.AdRequestException
+import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdViewLayoutParams
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
-import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdViewLayoutParams
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.adserver.entities.Ad
@@ -14,8 +14,6 @@ import com.adgrowth.internal.integrations.adserver.enums.AdType
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager.showPermission
 import com.adgrowth.internal.integrations.adserver.services.GetAdService
 import com.adgrowth.internal.integrations.adserver.services.SendAdEventService
-import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAdService as IGetAdService
-import com.adgrowth.internal.integrations.adserver.services.interfaces.SendAdEventService as ISendAdEventService
 import com.adgrowth.internal.integrations.adserver.views.AdImage
 import com.adgrowth.internal.integrations.adserver.views.AdPlayer
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
@@ -24,6 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAdService as IGetAdService
+import com.adgrowth.internal.integrations.adserver.services.interfaces.SendAdEventService as ISendAdEventService
 
 @SuppressLint("ViewConstructor")
 class AdServerAdView(
@@ -130,7 +130,7 @@ class AdServerAdView(
 
         mAdDuration = getAdDuration()
         manager.refreshRate = mAdDuration
-        mAdImage!!.addInto(this)
+        mAdImage?.addInto(this)
         mLoadFuture.complete(this)
         startRunningTimer()
         sendAdEventService.run(AdEventType.VIEW, mAd!!)

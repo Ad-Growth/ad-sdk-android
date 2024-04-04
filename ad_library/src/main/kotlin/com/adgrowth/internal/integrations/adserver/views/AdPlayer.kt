@@ -3,7 +3,6 @@ package com.adgrowth.internal.integrations.adserver.views
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import android.view.ViewGroup
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -31,7 +30,7 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
                     player.currentPosition.toDouble(),
                     player.duration.toDouble()
                 )
-                playerHandler.postDelayed(this, 500)
+                playerHandler.postDelayed(this, 100)
             }
         }
     }
