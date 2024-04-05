@@ -9,11 +9,10 @@ import com.adgrowth.internal.integrations.admob.AdMobInterstitial
 import com.adgrowth.internal.integrations.adserver.AdServerInterstitial
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
 import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
-import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.integrations.InterstitialIntegration
+import com.adgrowth.internal.interfaces.managers.AdManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class InterstitialManager(

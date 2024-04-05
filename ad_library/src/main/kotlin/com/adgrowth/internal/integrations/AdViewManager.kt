@@ -12,19 +12,18 @@ import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.admob.AdMobAdView
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.AdServerAdView
-
 import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager.showPermission
 import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
-import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
+import com.adgrowth.internal.interfaces.managers.AdManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 
 class AdViewManager(
     private val mUnitId: String,
@@ -35,6 +34,8 @@ class AdViewManager(
     private var mAd: AdViewIntegration? = null
     override lateinit var listener: AdViewIntegration.Listener
     private var mRefreshTimer: Timer? = null
+    var isLoaded = false
+        private set
     var isFailed = false
         private set
     private var mCurrentRefreshTime: Int = 0
@@ -81,7 +82,9 @@ class AdViewManager(
         ioScope.launch {
             while (mAd == null && builder != null) {
                 try {
+                    isLoaded = false
                     mAd = builder!!.build(this@AdViewManager).load(this@AdViewManager)
+                    isLoaded = true
                     listener.onLoad(mAd!!)
                     break
                 } catch (e: APIIOException) {
@@ -90,7 +93,8 @@ class AdViewManager(
                         val meta = JSONHelper.safeGetObject(e.body, "meta")
 
                         if (meta.has("refresh_rate")) {
-                            refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)?.toDouble()
+                            refreshRate =
+                                JSONHelper.safeGetInt(meta, "refresh_rate", null)?.toDouble()
                         }
 
                         builder = getNextIntegration()
@@ -207,6 +211,7 @@ class AdViewManager(
     }
 
     override fun onFullScreenShown(instanceHash: Int) {
+        println("FULL SCREEN SHOWN!")
         mAd?.apply {
             stopRefreshTimer()
             hide()

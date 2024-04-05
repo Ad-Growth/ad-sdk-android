@@ -18,8 +18,7 @@ import kotlinx.coroutines.launch
 class AdView : PreviewHandlerView, AdViewIntegration.Listener,
     AdServerEventManager.SdkInitializedListener {
     private val mainScope = CoroutineScope(Dispatchers.Main)
-    var isLoaded = false
-    var isFailed = false
+
     private var mAdManager: AdViewManager? = null
     private var mListener: Listener? = null
 
@@ -72,12 +71,20 @@ class AdView : PreviewHandlerView, AdViewIntegration.Listener,
         if (mAdManager == null) {
             mainScope.launch {
                 mListener?.onFailedToLoad(AdRequestException(AdRequestException.NOT_READY))
-                isFailed = true
+
             }
             return
         }
 
         mAdManager!!.reload(this)
+    }
+
+    fun isLoaded(): Boolean {
+        return mAdManager?.isLoaded == true
+    }
+
+    fun isFailed(): Boolean {
+        return mAdManager?.isFailed == true
     }
 
     override fun onFinished() {
@@ -90,7 +97,6 @@ class AdView : PreviewHandlerView, AdViewIntegration.Listener,
 
     override fun onLoad(ad: AdViewIntegration) {
         mainScope.launch {
-            isLoaded = true
             mAdManager?.show(this@AdView)
             mListener?.onLoad(this@AdView)
         }
@@ -99,7 +105,6 @@ class AdView : PreviewHandlerView, AdViewIntegration.Listener,
     override fun onFailedToLoad(exception: AdRequestException?) {
         mainScope.launch {
             mListener?.onFailedToLoad(exception)
-            isFailed = true
         }
     }
 

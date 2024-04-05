@@ -139,10 +139,10 @@ class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelp
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         mainScope.launch {
-
-            hideSystemUI()
             visibility = VISIBLE
             mOnShowListener.onShow()
+            requestFocus()
+
         }
     }
 
@@ -150,7 +150,6 @@ class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelp
         releasing = true
         mainScope.launch {
             LayoutHelpers.removeListener(this@AdDialog)
-            showSystemUI()
             if (parent != null) {
                 (parent as ViewGroup).removeView(this@AdDialog)
             }
@@ -194,24 +193,6 @@ class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelp
 
     interface OnShowListener {
         fun onShow()
-    }
-
-    private fun hideSystemUI() {
-        WindowCompat.setDecorFitsSystemWindows(context.window, false)
-        WindowInsetsControllerCompat(context.window, this).let {
-            it.hide(WindowInsetsCompat.Type.systemBars())
-            mOriginalSystemUiVisibility = it.systemBarsBehavior
-            it.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-    }
-
-    private fun showSystemUI() {
-        WindowCompat.setDecorFitsSystemWindows(context.window, true)
-        WindowInsetsControllerCompat(context.window, this).let {
-            it.show(WindowInsetsCompat.Type.systemBars())
-            it.systemBarsBehavior = mOriginalSystemUiVisibility
-        }
     }
 
     private fun hideKeyboardAndClearFocus(activity: Activity) {

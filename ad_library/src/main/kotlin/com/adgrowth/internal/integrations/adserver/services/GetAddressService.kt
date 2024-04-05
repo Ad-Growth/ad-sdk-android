@@ -32,10 +32,14 @@ class GetAddressService : IGetAddressService() {
 
         } catch (e: APIIOException) {
             // fallback
-            if (e.message!!.contains("Invalid latitude/longitude")) return ClientAddress(JSONObject())
+            if (e.message?.contains("Invalid latitude/longitude") == true) return ClientAddress(
+                JSONObject()
+            )
             throw IOErrorHandler.handle(e)
         } catch (e: JSONException) {
-            if (e.message!!.contains("Invalid latitude/longitude")) return ClientAddress(JSONObject())
+            if (e.message?.contains("Invalid latitude/longitude") == true) return ClientAddress(
+                JSONObject()
+            )
             throw IOErrorHandler.handle(e)
         }
     }
