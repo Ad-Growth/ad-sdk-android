@@ -21,14 +21,14 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
     private val mediaItem: MediaItem = MediaItem.fromUri(url)
     private val playerHandler = Handler(Looper.getMainLooper())
 
-    val adDuration: Double get() = player.duration.toDouble()
+    val adDuration: Double get() = (player.duration / 1000).toDouble()
 
     private val progressUpdater = object : Runnable {
         override fun run() {
             if (player.isPlaying) {
                 listener.onVideoProgressChanged(
-                    player.currentPosition.toDouble(),
-                    player.duration.toDouble()
+                    (player.currentPosition / 1000).toDouble(),
+                    (player.duration / 1000).toDouble()
                 )
                 playerHandler.postDelayed(this, 100)
             }
@@ -95,7 +95,7 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
     override fun onPlaybackStateChanged(playbackState: Int) {
 
         when (playbackState) {
-            Player.STATE_READY -> listener.onVideoReady(player.duration.toDouble())
+            Player.STATE_READY -> listener.onVideoReady((player.duration / 1000).toDouble())
             Player.STATE_ENDED -> listener.onVideoFinished()
         }
 
