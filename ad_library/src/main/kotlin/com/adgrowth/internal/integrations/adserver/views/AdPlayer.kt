@@ -21,14 +21,14 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
     private val mediaItem: MediaItem = MediaItem.fromUri(url)
     private val playerHandler = Handler(Looper.getMainLooper())
 
-    val adDuration: Double get() = player.duration.toDouble()
+    val adDuration: Double get() = (player.duration.toDouble() / 1000)
 
     private val progressUpdater = object : Runnable {
         override fun run() {
             if (player.isPlaying) {
                 listener.onVideoProgressChanged(
-                    player.currentPosition.toDouble(),
-                    player.duration.toDouble()
+                    (player.currentPosition.toDouble() / 1000),
+                    (player.duration.toDouble() / 1000)
                 )
                 playerHandler.postDelayed(this, 100)
             }
@@ -46,16 +46,14 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
     fun play() {
         mainScope.launch {
             player.playWhenReady = true
-            playerHandler.post(progressUpdater)
-            listener.onPlay()
+            player.play()
         }
     }
 
     fun pause() {
         mainScope.launch {
             player.playWhenReady = false
-            playerHandler.removeCallbacks(progressUpdater)
-            listener.onPause()
+            player.pause()
         }
     }
 
@@ -95,7 +93,7 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
     override fun onPlaybackStateChanged(playbackState: Int) {
 
         when (playbackState) {
-            Player.STATE_READY -> listener.onVideoReady(player.duration.toDouble())
+            Player.STATE_READY -> listener.onVideoReady((player.duration.toDouble() / 1000))
             Player.STATE_ENDED -> listener.onVideoFinished()
         }
 
@@ -105,8 +103,10 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
 
         if (!isPlaying) {
             listener.onPause()
+            playerHandler.removeCallbacks(progressUpdater)
         } else {
             listener.onPlay()
+            playerHandler.post(progressUpdater)
         }
 
     }
