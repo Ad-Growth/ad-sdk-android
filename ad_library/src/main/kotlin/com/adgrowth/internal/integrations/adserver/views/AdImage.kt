@@ -7,7 +7,6 @@ import android.os.Build
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -30,10 +29,14 @@ class AdImage(private val context: Context, imageUrl: String, private val listen
     }
 
     init {
-        Glide.with(context)
-            .load(imageUrl)
-            .listener(this)
-            .preload()
+        try {
+            Glide.with(context)
+                .load(imageUrl)
+                .listener(this)
+                .preload()
+        } catch (e: Exception) {
+            listener.onImageError()
+        }
 
         imageView.setOnClickListener {
             listener.onClick()
@@ -46,16 +49,21 @@ class AdImage(private val context: Context, imageUrl: String, private val listen
             if (imageView.parent != null) (imageView.parent as ViewGroup).removeView(imageView)
             parent.addView(imageView)
 
-            imageView.drawable.let {
+            imageView.drawable?.let {
+                try {
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && it is AnimatedImageDrawable) {
-                    it.repeatCount = AnimatedImageDrawable.REPEAT_INFINITE
-                    it.start()
-                }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && it is AnimatedImageDrawable) {
+                        it.repeatCount = AnimatedImageDrawable.REPEAT_INFINITE
+                        it.start()
+                    }
 
-                if (it is GifDrawable) {
-                    it.setLoopCount(GifDrawable.LOOP_FOREVER)
-                    it.startFromFirstFrame()
+                    if (it is GifDrawable) {
+                        it.setLoopCount(GifDrawable.LOOP_FOREVER)
+                        it.start()
+                    }
+                } catch (e: Exception) {
+                    listener.onImageError()
+                    println("Error while playing gif: ${e.message}")
                 }
             }
         }
@@ -63,9 +71,12 @@ class AdImage(private val context: Context, imageUrl: String, private val listen
 
     fun release() {
         mainScope.launch {
-            Glide.with(context).clear(imageView)
-            imageView.setImageDrawable(null)
-            if (imageView.parent != null) (imageView.parent as ViewGroup).removeView(imageView)
+            try {
+                Glide.with(context).clear(imageView)
+                imageView.setImageDrawable(null)
+                if (imageView.parent != null) (imageView.parent as ViewGroup).removeView(imageView)
+            } catch (_: Exception) {
+            }
         }
     }
 
@@ -76,7 +87,9 @@ class AdImage(private val context: Context, imageUrl: String, private val listen
         target: Target<Drawable>?,
         isFirstResource: Boolean
     ): Boolean {
-        listener.onImageError()
+        mainScope.launch {
+            listener.onImageError()
+        }
         return false
     }
 
@@ -88,7 +101,9 @@ class AdImage(private val context: Context, imageUrl: String, private val listen
         isFirstResource: Boolean
     ): Boolean {
         mainScope.launch {
-            imageView.setImageDrawable(resource)
+            resource?.let {
+                imageView.setImageDrawable(it)
+            }
             listener.onImageReady()
         }
         return false
@@ -99,6 +114,4 @@ class AdImage(private val context: Context, imageUrl: String, private val listen
         fun onImageReady()
         fun onImageError()
     }
-
-
 }

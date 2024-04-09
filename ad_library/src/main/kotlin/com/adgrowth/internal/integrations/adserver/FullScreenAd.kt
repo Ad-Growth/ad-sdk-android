@@ -78,12 +78,12 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
     open fun show(manager: AdManager<*, *>) {
         if (!mAdIsReady) {
-            mListener!!.onFailedToShow(AdRequestException.NOT_READY)
+            mListener?.onFailedToShow(AdRequestException.NOT_READY)
             return
         }
 
         if (mAd.isConsumed) {
-            mListener!!.onFailedToShow(AdRequestException.ALREADY_CONSUMED)
+            mListener?.onFailedToShow(AdRequestException.ALREADY_CONSUMED)
             return
         }
 
@@ -92,8 +92,8 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         prepareDialog()
 
-        if (mediaType === AdMediaType.IMAGE) mAdImage!!.addInto(mAdContainerView)
-        if (mediaType === AdMediaType.VIDEO) mAdPlayer!!.addInto(mAdContainerView)
+        if (mediaType === AdMediaType.IMAGE) mAdImage?.addInto(mAdContainerView)
+        if (mediaType === AdMediaType.VIDEO) mAdPlayer?.addInto(mAdContainerView)
 
         AdServerEventManager.notifyFullScreenShown(manager.hashCode())
 
