@@ -63,7 +63,6 @@ class AdServerRewarded(
         if (remainingTime < 0) {
             if (remainingTime <= TIME_TO_SHOW_TAP_TO_CLOSE) {
                 mDialog?.setButtonLabelText(mContext.getString(R.string.tap_to_close))
-                mDialog?.enableCloseOnTextButton()
                 stopRunningTimer()
             }
             return

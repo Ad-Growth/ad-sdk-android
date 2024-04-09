@@ -15,10 +15,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
-
 import com.adgrowth.adserver.R
 import com.adgrowth.adserver.helpers.LayoutHelpers
 import kotlinx.coroutines.CoroutineScope
@@ -55,7 +51,7 @@ class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelp
         mCloseContainer = view.findViewById(R.id.ad_close_container)
         mCloseTextView = findViewById(R.id.close_text_view)
         mCloseBtn = findViewById(R.id.close_btn)
-        mCloseBtn.isEnabled = false
+        mCloseContainer.isEnabled = false
         mProgressBar = findViewById(R.id.video_progress)
         mProgressBar.progress = 0
         mProgressBar.max = 100
@@ -66,7 +62,7 @@ class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelp
 
     fun setOnCloseListener(onCloseListener: OnClickListener) {
         mOnCloseListener = onCloseListener
-        mCloseBtn.setOnClickListener(onCloseListener)
+        mCloseContainer.setOnClickListener(onCloseListener)
     }
 
     fun setVideoProgress(progress: Int) {
@@ -78,21 +74,14 @@ class AdDialog(private val context: Activity) : FrameLayout(context), LayoutHelp
 
     fun enableCloseButton() {
         mainScope.launch {
-            mCloseBtn.isEnabled = true
+            mCloseContainer.isEnabled = true
             mCloseBtn.alpha = 1f
             mCanDismiss = true
         }
     }
 
-    fun enableCloseOnTextButton() {
-        mainScope.launch {
-            mCloseTextView.isEnabled = true
-            mCloseTextView.setOnClickListener(mOnCloseListener)
-        }
-    }
-
     val isCloseButtonEnabled: Boolean
-        get() = mCloseBtn.isEnabled
+        get() = mCloseContainer.isEnabled
 
     fun showButtonText() {
         mainScope.launch {

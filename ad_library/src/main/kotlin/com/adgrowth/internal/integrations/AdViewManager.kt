@@ -211,7 +211,6 @@ class AdViewManager(
     }
 
     override fun onFullScreenShown(instanceHash: Int) {
-        println("FULL SCREEN SHOWN!")
         mAd?.apply {
             stopRefreshTimer()
             hide()
