@@ -92,7 +92,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
         prepareDialog()
 
-        if (mediaType === AdMediaType.IMAGE) mAdImage?.addInto(mAdContainerView)
+        if (mediaType === AdMediaType.IMAGE) mAdContainerView.addView(mAdImage)
         if (mediaType === AdMediaType.VIDEO) mAdPlayer?.addInto(mAdContainerView)
 
         AdServerEventManager.notifyFullScreenShown(manager.hashCode())
@@ -110,7 +110,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
 
     protected fun presentPostAd() {
         mAdPlayer!!.release()
-        mAdImage!!.addInto(mAdContainerView)
+        mAdContainerView.addView(mAdImage)
 
         mDialog!!.hideProgressBar()
 
