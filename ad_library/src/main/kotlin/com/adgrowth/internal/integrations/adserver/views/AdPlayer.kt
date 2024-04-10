@@ -1,5 +1,6 @@
 package com.adgrowth.internal.integrations.adserver.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +18,11 @@ import kotlinx.coroutines.launch
 class AdPlayer(context: Context, url: String, private val listener: Listener) :
     PlayerView(context), Player.Listener {
     private val mainScope = CoroutineScope(Dispatchers.Main)
-    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context)
+        .setRenderersFactory(DefaultRenderersFactory(context).setEnableDecoderFallback(true))
+        .build()
     private val mediaItem: MediaItem = MediaItem.fromUri(url)
     private val playerHandler = Handler(Looper.getMainLooper())
 
@@ -102,6 +108,7 @@ class AdPlayer(context: Context, url: String, private val listener: Listener) :
 
 
     override fun onPlayerError(error: PlaybackException) {
+        println(error)
         mainScope.launch {
             listener.onVideoError()
         }

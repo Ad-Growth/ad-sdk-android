@@ -130,7 +130,9 @@ class AdServerAdView(
 
         mAdDuration = getAdDuration()
         manager.refreshRate = mAdDuration
-        addView(mAdImage)
+        mAdImage?.let {
+            this@AdServerAdView.addView(it)
+        }
         mLoadFuture.complete(this)
         startRunningTimer()
         sendAdEventService.run(AdEventType.VIEW, mAd!!)
