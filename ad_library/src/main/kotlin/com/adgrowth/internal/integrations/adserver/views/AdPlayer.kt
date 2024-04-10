@@ -13,22 +13,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class AdPlayer(private val context: Context, url: String, private val listener: Listener) :
-    Player.Listener {
-    private var playerView: PlayerView? = null
+class AdPlayer(context: Context, url: String, private val listener: Listener) :
+    PlayerView(context), Player.Listener {
     private val mainScope = CoroutineScope(Dispatchers.Main)
-    private val player: ExoPlayer = ExoPlayer.Builder(context).build()
+    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
     private val mediaItem: MediaItem = MediaItem.fromUri(url)
     private val playerHandler = Handler(Looper.getMainLooper())
 
-    val adDuration: Double get() = (player.duration.toDouble() / 1000)
+    val adDuration: Double get() = (exoPlayer.duration.toDouble() / 1000)
 
     private val progressUpdater = object : Runnable {
         override fun run() {
-            if (player.isPlaying) {
+            if (exoPlayer.isPlaying) {
                 listener.onVideoProgressChanged(
-                    (player.currentPosition.toDouble() / 1000),
-                    (player.duration.toDouble() / 1000)
+                    (exoPlayer.currentPosition.toDouble() / 1000),
+                    (exoPlayer.duration.toDouble() / 1000)
                 )
                 playerHandler.postDelayed(this, 100)
             }
@@ -37,63 +36,53 @@ class AdPlayer(private val context: Context, url: String, private val listener: 
 
     init {
         mainScope.launch {
-            player.addListener(this@AdPlayer)
-            player.setMediaItem(mediaItem)
-            player.prepare()
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            useController = false
+            player = this@AdPlayer.exoPlayer
+            setOnClickListener { listener.onClick() }
+
+            exoPlayer.addListener(this@AdPlayer)
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
         }
     }
 
     fun play() {
         mainScope.launch {
-            player.playWhenReady = true
-            player.play()
+            exoPlayer.playWhenReady = true
+            exoPlayer.play()
         }
     }
 
     fun pause() {
         mainScope.launch {
-            player.playWhenReady = false
-            player.pause()
+            exoPlayer.playWhenReady = false
+            exoPlayer.pause()
         }
     }
 
     fun setMuted(mute: Boolean) {
         mainScope.launch {
-            player.volume = if (mute) 0f else 1f
+            exoPlayer.volume = if (mute) 0f else 1f
         }
     }
 
     fun release() {
         mainScope.launch {
             playerHandler.removeCallbacks(progressUpdater)
-            if (playerView?.parent != null) (playerView?.parent as ViewGroup).removeView(playerView)
-            player.removeListener(this@AdPlayer)
-            player.release()
-        }
-    }
-
-    fun addInto(parent: ViewGroup) {
-        mainScope.launch {
-            playerView = PlayerView(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                useController = false
-                player = this@AdPlayer.player
-                setOnClickListener { listener.onClick() }
-            }
-
-            if (playerView?.parent != null) (playerView?.parent as ViewGroup).removeView(playerView)
-
-            parent.addView(playerView)
+            if (parent != null) (parent as ViewGroup).removeView(this@AdPlayer)
+            exoPlayer.removeListener(this@AdPlayer)
+            exoPlayer.release()
         }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
 
         when (playbackState) {
-            Player.STATE_READY -> listener.onVideoReady((player.duration.toDouble() / 1000))
+            Player.STATE_READY -> listener.onVideoReady((exoPlayer.duration.toDouble() / 1000))
             Player.STATE_ENDED -> listener.onVideoFinished()
         }
 

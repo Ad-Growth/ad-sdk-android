@@ -93,7 +93,7 @@ abstract class FullScreenAd<T : AdIntegration<T, Listener>, Listener : AdListene
         prepareDialog()
 
         if (mediaType === AdMediaType.IMAGE) mAdContainerView.addView(mAdImage)
-        if (mediaType === AdMediaType.VIDEO) mAdPlayer?.addInto(mAdContainerView)
+        if (mediaType === AdMediaType.VIDEO) mAdContainerView.addView(mAdPlayer)
 
         AdServerEventManager.notifyFullScreenShown(manager.hashCode())
 

@@ -174,7 +174,7 @@ class AdServerAdView(
 
 
     override fun onVideoReady(videoDuration: Double) {
-        mAdPlayer!!.addInto(this)
+        addView(mAdPlayer)
         mAdDuration = getAdDuration()
         mAdPlayer!!.setMuted(true)
         manager.refreshRate = videoDuration
