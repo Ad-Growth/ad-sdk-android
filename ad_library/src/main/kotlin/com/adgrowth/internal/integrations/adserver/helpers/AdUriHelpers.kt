@@ -8,22 +8,25 @@ import java.util.*
 
 object AdUriHelpers {
     @JvmStatic
-    fun openUrl(context: Activity, url: String, ipAddress: String?) {
+    fun openUrl(context: Activity, url: String, ipAddress: String, uniqueId: String) {
         val intent =
-            Intent(Intent.ACTION_VIEW, Uri.parse(replaceAdCallbackParams(context, url, ipAddress)))
+            Intent(Intent.ACTION_VIEW, Uri.parse(replaceURISnippets(url, ipAddress, uniqueId)))
         context.startActivity(intent)
     }
 
     @JvmStatic
-    fun replaceAdCallbackParams(context: Activity, uri: String, ipAddress: String?): String {
-        val clickId = UUID.randomUUID().toString()
+    fun replaceURISnippets(uri: String, ipAddress: String, uniqueId: String): String {
         val adId = InitializationManager.ADVERTISING_ID
-        val siteId = context.packageName
+        val appId = InitializationManager.APP_META_DATA.appId
 
         return uri
             .replace("\\{advertising_id\\}".toRegex(), adId)
-            .replace("\\{click_id\\}".toRegex(), clickId)
-            .replace("\\{site_id\\}".toRegex(), siteId)
-            .replace("\\{ip\\}".toRegex(), ipAddress!!)
+            .replace("\\{click_id\\}".toRegex(), uniqueId)
+            .replace("\\{site_id\\}".toRegex(), appId)
+            .replace("\\{ip\\}".toRegex(), ipAddress)
+    }
+
+    fun getUniqueId(): String {
+        return UUID.randomUUID().toString()
     }
 }

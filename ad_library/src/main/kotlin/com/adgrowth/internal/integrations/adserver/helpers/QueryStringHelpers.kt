@@ -12,7 +12,7 @@ object QueryStringHelpers {
     fun encode(map: Map<*, *>?): String {
         val result = StringBuilder()
         encodeObject(result, "", map?.let { JSONObject(it) })
-        return "?$result"
+        return if (result.isEmpty()) "" else "$result"
     }
 
     private fun encodeObject(result: StringBuilder, prefix: String, `object`: Any?) {
@@ -36,6 +36,7 @@ object QueryStringHelpers {
                         }
                     }
                 }
+
                 is JSONObject -> {
                     val keys = `object`.keys()
                     while (keys.hasNext()) {
@@ -54,6 +55,7 @@ object QueryStringHelpers {
                         }
                     }
                 }
+
                 else -> {
                     var encodedValue = `object`
                     if (`object` is String) encodedValue =

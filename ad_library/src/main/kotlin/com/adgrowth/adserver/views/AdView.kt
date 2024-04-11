@@ -11,11 +11,14 @@ import com.adgrowth.internal.integrations.InitializationManager
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
 import com.adgrowth.internal.views.PreviewHandlerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AdView : PreviewHandlerView, AdViewIntegration.Listener,
     AdServerEventManager.SdkInitializedListener {
-    var isLoaded = false
-    var isFailed = false
+    private val mainScope = CoroutineScope(Dispatchers.Main)
+
     private var mAdManager: AdViewManager? = null
     private var mListener: Listener? = null
 
@@ -66,9 +69,9 @@ class AdView : PreviewHandlerView, AdViewIntegration.Listener,
 
     fun reload() {
         if (mAdManager == null) {
-            context.runOnUiThread {
+            mainScope.launch {
                 mListener?.onFailedToLoad(AdRequestException(AdRequestException.NOT_READY))
-                isFailed = true
+
             }
             return
         }
@@ -76,39 +79,45 @@ class AdView : PreviewHandlerView, AdViewIntegration.Listener,
         mAdManager!!.reload(this)
     }
 
+    fun isLoaded(): Boolean {
+        return mAdManager?.isLoaded == true
+    }
+
+    fun isFailed(): Boolean {
+        return mAdManager?.isFailed == true
+    }
+
     override fun onFinished() {
-        reload()
+        mAdManager?.reload(this)
     }
 
     override fun onDismissed() {
-        context.runOnUiThread { mListener?.onDismissed() }
+        mainScope.launch { mListener?.onDismissed() }
     }
 
     override fun onLoad(ad: AdViewIntegration) {
-        context.runOnUiThread {
-            isLoaded = true
-            mAdManager?.show(this)
-            mListener?.onLoad(this)
+        mainScope.launch {
+            mAdManager?.show(this@AdView)
+            mListener?.onLoad(this@AdView)
         }
     }
 
     override fun onFailedToLoad(exception: AdRequestException?) {
-        context.runOnUiThread {
+        mainScope.launch {
             mListener?.onFailedToLoad(exception)
-            isFailed = true
         }
     }
 
     override fun onClicked() {
-        context.runOnUiThread { mListener?.onClicked() }
+        mainScope.launch { mListener?.onClicked() }
     }
 
     override fun onFailedToShow(code: String?) {
-        context.runOnUiThread { mListener?.onFailedToShow(code) }
+        mainScope.launch { mListener?.onFailedToShow(code) }
     }
 
     override fun onImpression() {
-        context.runOnUiThread { mListener?.onImpression() }
+        mainScope.launch { mListener?.onImpression() }
     }
 
     override fun onDetachedFromWindow() {

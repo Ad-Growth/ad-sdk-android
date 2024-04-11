@@ -1,13 +1,11 @@
 package com.adgrowth.internal.integrations.adserver
 
 import android.annotation.SuppressLint
-import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.ImageView
 import com.adgrowth.adserver.exceptions.AdRequestException
+import com.adgrowth.adserver.helpers.LayoutHelpers.Companion.getAdViewLayoutParams
 import com.adgrowth.internal.enums.AdEventType
 import com.adgrowth.internal.exceptions.APIIOException
-import com.adgrowth.internal.helpers.LayoutHelper.Companion.getAdLayoutParams
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.adserver.entities.Ad
@@ -16,13 +14,16 @@ import com.adgrowth.internal.integrations.adserver.enums.AdType
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager.showPermission
 import com.adgrowth.internal.integrations.adserver.services.GetAdService
 import com.adgrowth.internal.integrations.adserver.services.SendAdEventService
-import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAdService as IGetAdService
-import com.adgrowth.internal.integrations.adserver.services.interfaces.SendAdEventService as ISendAdEventService
 import com.adgrowth.internal.integrations.adserver.views.AdImage
 import com.adgrowth.internal.integrations.adserver.views.AdPlayer
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAdService as IGetAdService
+import com.adgrowth.internal.integrations.adserver.services.interfaces.SendAdEventService as ISendAdEventService
 
 @SuppressLint("ViewConstructor")
 class AdServerAdView(
@@ -30,28 +31,21 @@ class AdServerAdView(
     private val getAdService: IGetAdService,
     private val sendAdEventService: ISendAdEventService
 ) : AdViewIntegration(manager.context), AdImage.Listener, AdPlayer.Listener {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mLoadFuture: CompletableFuture<AdViewIntegration>
     private var mAd: Ad? = null
     private val mContext = manager.context
-    private var mImage: AdImage? = null
-    private var mPlayer: AdPlayer? = null
+    private var mAdImage: AdImage? = null
+    private var mAdPlayer: AdPlayer? = null
     private var mListener: AdViewIntegration.Listener? = null
     private var mRunningTimer: Timer? = Timer()
     private var mCurrentRunningTime = 0
-    private var mAdDuration: Int? = Ad.DEFAULT_AD_DURATION
+    private var mAdDuration: Double = Ad.DEFAULT_AD_DURATION
 
-    private val onAdClickListener = OnClickListener {
-        sendAdEventService.run(AdEventType.CLICK, mAd!!)
-        if (mListener != null) mListener!!.onClicked()
-    }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        stopRunningTimer()
-    }
-
-    init {
-        setOnClickListener(onAdClickListener)
+        release()
     }
 
     override fun setListener(listener: AdViewIntegration.Listener) {
@@ -67,32 +61,38 @@ class AdServerAdView(
         options["orientation"] = manager.orientation.toString()
         options["dimension"] = manager.size.toString()
 
-        layoutParams = getAdLayoutParams(manager.orientation, manager.size)
+        layoutParams = getAdViewLayoutParams(manager.orientation, manager.size)
 
 
         mAd = getAdService.run(options)
 
         if (mAd!!.type !== AdType.BANNER) {
-            throw APIIOException(
-                HTTPStatusCode.FORBIDDEN, AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
+            throw AdRequestException(
+                AdRequestException.UNIT_ID_MISMATCHED_AD_TYPE
             )
         }
-
-
         mCurrentRunningTime = 0
 
-
         if (mAd!!.mediaType === AdMediaType.IMAGE) {
-            mImage = AdImage(context, mAd!!.mediaUrl, this)
-            mImage!!.scaleType = ImageView.ScaleType.CENTER_CROP
-            addView(mImage)
+            mAdImage = AdImage(mContext, mAd!!.mediaUrl, this)
+
         } else {
-            mPlayer = AdPlayer(mContext, mAd!!.mediaUrl, this)
-            mPlayer!!.setScaleType(AdPlayer.ScaleType.FIT_CENTER)
-            addView(mPlayer)
+            mAdPlayer = AdPlayer(mContext, mAd!!.mediaUrl, this)
         }
 
         return mLoadFuture.get()
+    }
+
+    override fun hide() {
+        mainScope.launch {
+            visibility = GONE
+        }
+    }
+
+    override fun unhide() {
+        mainScope.launch {
+            visibility = VISIBLE
+        }
     }
 
     private fun startRunningTimer() {
@@ -114,17 +114,25 @@ class AdServerAdView(
         }
     }
 
-    private fun getAdDuration(): Int {
-        if (mAd!!.refreshRate === Ad.AUTO_REFRESH_RATE && mAd!!.mediaType === AdMediaType.VIDEO) return mPlayer!!.adDuration
+    private fun getAdDuration(): Double {
+        if (mAd!!.refreshRate === Ad.AUTO_REFRESH_RATE && mAd!!.mediaType === AdMediaType.VIDEO) return mAdPlayer!!.adDuration
 
         // 0 or 30-150
         return Ad.DEFAULT_AD_DURATION
+    }
+
+    override fun onClick() {
+        sendAdEventService.run(AdEventType.CLICK, mAd!!)
+        if (mListener != null) mListener!!.onClicked()
     }
 
     override fun onImageReady() {
 
         mAdDuration = getAdDuration()
         manager.refreshRate = mAdDuration
+        mAdImage?.let {
+            this@AdServerAdView.addView(it)
+        }
         mLoadFuture.complete(this)
         startRunningTimer()
         sendAdEventService.run(AdEventType.VIEW, mAd!!)
@@ -141,12 +149,12 @@ class AdServerAdView(
 
     override fun pauseAd() {
         stopRunningTimer()
-        if (mAd?.mediaType === AdMediaType.VIDEO) mPlayer?.pause()
+        if (mAd?.mediaType === AdMediaType.VIDEO) mAdPlayer?.pause()
     }
 
     override fun resumeAd() {
         startRunningTimer()
-        if (mAd?.mediaType === AdMediaType.VIDEO) mPlayer?.play()
+        if (mAd?.mediaType === AdMediaType.VIDEO) mAdPlayer?.play()
     }
 
     override fun placeIn(parent: ViewGroup) {
@@ -154,19 +162,29 @@ class AdServerAdView(
         parent.addView(this)
     }
 
+    override fun release() {
+        stopRunningTimer()
+        mAdImage?.release()
+        mAdPlayer?.release()
+        mAdImage = null
+        mAdPlayer = null
+    }
+
     override fun onVideoProgressChanged(position: Double, total: Double) {
         mCurrentRunningTime = position.toInt()
     }
 
 
-    override fun onVideoReady(videoDuration: Int) {
+    override fun onVideoReady(videoDuration: Double) {
+        addView(mAdPlayer)
         mAdDuration = getAdDuration()
-        mPlayer!!.setMuted(true)
-        manager.refreshRate = mAdDuration
+        mAdPlayer!!.setMuted(true)
+        manager.refreshRate = videoDuration
+
         mLoadFuture.complete(this)
 
         if (showPermission) {
-            mPlayer!!.play()
+            mAdPlayer!!.play()
             startRunningTimer()
         }
 

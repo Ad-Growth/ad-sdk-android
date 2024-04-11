@@ -3,23 +3,26 @@ package com.adgrowth.internal.integrations.admob
 import android.view.ViewGroup
 import com.adgrowth.adserver.AdServer
 import com.adgrowth.internal.enums.AdEventType
-import com.adgrowth.internal.helpers.LayoutHelper
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import com.adgrowth.internal.integrations.AdViewManager
 import com.adgrowth.internal.integrations.admob.services.GetAdViewService
 import com.adgrowth.internal.integrations.admob.services.SendAdEventService
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
 import com.google.android.gms.ads.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 import com.adgrowth.internal.integrations.admob.services.interfaces.SendAdEventService as ISendAdEventService
 
 
 class AdMobAdView(
-    manager: AdViewManager,
+    private val manager: AdViewManager,
     private val getAdService: IGetAdService<AdView>,
     private val sendAdEventService: ISendAdEventService
 ) : AdViewIntegration(manager.context) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mAdRequest: AdRequest.Builder
     private var mAd: AdView? = null
     private var mListener: Listener? = null
@@ -59,25 +62,47 @@ class AdMobAdView(
         profile.interests.forEach { interest ->
             mAdRequest.addKeyword(interest)
         }
-        layoutParams = LayoutHelper.getAdLayoutParams(manager.orientation, manager.size)
+        layoutParams = LayoutHelpers.getAdViewLayoutParams(manager.orientation, manager.size)
         mAd = getAdService.run(mAdRequest.build());
         mAd!!.adListener = adViewListener
         return this
     }
 
+    override fun hide() {
+        mainScope.launch {
+            visibility = GONE
+            mAd?.visibility = GONE
+        }
+    }
+
+    override fun unhide() {
+        mainScope.launch {
+            visibility = VISIBLE
+            mAd?.visibility = VISIBLE
+        }
+    }
+
     override fun resumeAd() {
-        mAd?.resume()
+        mainScope.launch {
+            mAd?.resume()
+        }
     }
 
     override fun pauseAd() {
-        mAd?.pause()
+        mainScope.launch {
+            mAd?.pause()
+        }
     }
 
     override fun placeIn(parent: ViewGroup) {
-
         this.addView(mAd)
         if (parent.indexOfChild(this) >= 0) parent.removeView(this)
         parent.addView(this)
+    }
+
+    override fun release() {
+        mAd?.destroy()
+        mAd = null
     }
 
     override fun setListener(listener: Listener) {

@@ -13,11 +13,16 @@ import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
 import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.integrations.RewardedIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 
 class RewardedManager(
     private val mUnitId: String,
 ) : AdManager<RewardedIntegration.Listener, RewardedManager.Builder>() {
+    private val ioScope = CoroutineScope(Dispatchers.IO)
     var isLoaded = false
         private set
     var isFailed = false
@@ -57,13 +62,13 @@ class RewardedManager(
         }
         this.context = context
 
-        Thread {
+       ioScope.launch {
             while (mAd == null && builder != null) {
 
-                this.isLoaded = false
+                isLoaded = false
 
                 try {
-                    mAd = builder!!.build(this).load(this)
+                    mAd = builder!!.build(this@RewardedManager).load(this@RewardedManager)
                     isLoaded = true
                     listener.onLoad(mAd!!)
                     break
@@ -97,13 +102,16 @@ class RewardedManager(
                 isFailed = true
                 listener.onFailedToLoad(AdRequestException(AdRequestException.NO_AD_FOUND))
             }
-        }.start()
-
+        }
+        
     }
 
 
     fun show(context: Activity) {
         if (!AdServerEventManager.showPermission) {
+            // ignore if it's already showing
+            if (AdServerEventManager.adCurrentlyShown == hashCode()) return
+
             listener.onFailedToShow(AdRequestException.ALREADY_SHOWING_FULL_SCREEN_AD)
             return
         }

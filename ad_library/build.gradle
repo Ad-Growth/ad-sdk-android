@@ -3,13 +3,14 @@ plugins {
     id 'maven-publish'
     id 'base'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
-def sdkVersion = "1.1.0"
+def sdkVersion = "1.2.0"
 
 android {
     namespace 'com.adgrowth.adserver'
-    compileSdk 34
+    compileSdk 33
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -20,7 +21,7 @@ android {
 
     defaultConfig {
         minSdk 24
-        targetSdk 34
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -31,30 +32,21 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-
+            buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
         adgrowth_hml {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-hml.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
-            buildConfigField("int", "TIME_TO_REWARD", "10")
         }
+
         adgrowth_dev {
             buildConfigField("String", "API_ENDPOINT", '"https://apiad-dev.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
-            buildConfigField("int", "TIME_TO_REWARD", "10")
         }
-        release {
-            buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "30")
-            buildConfigField("int", "TIME_TO_REWARD", "30")
-        }
+
         debug {
             matchingFallbacks = ['release']
             buildConfigField("String", "API_ENDPOINT", '"https://apiad.adgrowth.com"')
-            buildConfigField("int", "DEFAULT_AD_DURATION", "10")
-            buildConfigField("int", "TIME_TO_REWARD", "10")
         }
 
     }
@@ -75,7 +67,12 @@ android {
 dependencies {
     api 'com.github.bumptech.glide:glide:4.15.1'
 
-    api 'androidx.core:core-ktx:1.12.0'
+    def media3_version = "1.1.1"
+
+    api "androidx.media3:media3-exoplayer:$media3_version"
+    api "androidx.media3:media3-ui:$media3_version"
+
+    api 'androidx.core:core-ktx:1.9.0'
 
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
@@ -85,13 +82,8 @@ dependencies {
 
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    // testImplementation 'androidx.test:core-ktx:1.5.0'
-    // testImplementation 'androidx.test:monitor:1.6.1'
-    // testImplementation 'androidx.test.ext:junit-ktx:1.1.5'
-    // testImplementation 'junit:junit:4.13.2'
-    // testImplementation "org.mockito:mockito-core:3.+"
-    // androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+
 }
 
 afterEvaluate {

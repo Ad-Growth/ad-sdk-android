@@ -7,12 +7,16 @@ import com.adgrowth.adserver.AdServer
 import com.adgrowth.adserver.entities.ClientProfile
 import com.adgrowth.adserver.exceptions.AdRequestException
 import com.adgrowth.adserver.exceptions.SDKInitException
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import com.adgrowth.internal.exceptions.APIIOException
 import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.AdServerInitializer
 import com.adgrowth.internal.integrations.adserver.entities.AppMetaData
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.adgrowth.internal.interfaces.managers.InitializationManager as IInitializationManager
 
 
@@ -21,12 +25,15 @@ class InitializationManager(
     override val clientProfile: ClientProfile,
     override var listener: AdServer.Listener
 ) : IInitializationManager(context, clientProfile, listener) {
-
+    private val layoutHelper = LayoutHelpers(context)
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     override val appMetadata: AppMetaData
         get() = APP_META_DATA
 
     init {
+        layoutHelper.startEdgeInsetsObserver()
         try {
+            APP_PACKAGE_NAME = context.packageName
             CLIENT_KEY = getClientKey(context)
 
             val adServer = AdServerInitializer.Builder().build(this).initialize()
@@ -63,9 +70,12 @@ class InitializationManager(
 
             }
         } catch (e: AdRequestException) {
-            notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
+            notifyFailed(SDKInitException(e))
         } catch (e: Exception) {
-            notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
+            if (e.cause is AdRequestException)
+                notifyFailed(SDKInitException(e.cause as AdRequestException))
+            else
+                notifyFailed(SDKInitException(SDKInitException.UNKNOWN_ERROR))
         }
 
     }
@@ -85,14 +95,14 @@ class InitializationManager(
 
     private fun notifyInitialized() {
         isInitialized = true
-        context.runOnUiThread {
+        mainScope.launch {
             listener.onInit()
         }
         AdServerEventManager.notifySDKInitialized()
     }
 
     private fun notifyFailed(exception: SDKInitException) {
-        context.runOnUiThread {
+        mainScope.launch {
             listener.onFailed(exception);
         }
     }
@@ -105,5 +115,6 @@ class InitializationManager(
         var CLIENT_KEY: String = ""
         var ADVERTISING_ID: String = ""
         var IP_ADDRESS: String = "127.0.0.1"
+        var APP_PACKAGE_NAME = ""
     }
 }

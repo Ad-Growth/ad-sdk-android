@@ -1,212 +1,126 @@
 package com.adgrowth.internal.integrations.adserver.views
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.graphics.Matrix
-import android.graphics.SurfaceTexture
-import android.media.MediaPlayer
-import android.view.Surface
-import android.view.TextureView
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.view.ViewGroup
-import com.adgrowth.internal.integrations.adserver.entities.Ad
-import java.io.IOException
-import java.util.*
-import kotlin.math.ceil
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-@SuppressLint("ViewConstructor")
-class AdPlayer(context: Activity, url: String?, playerListener: Listener?) : TextureView(context),
-    TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
-    MediaPlayer.OnCompletionListener {
+class AdPlayer(context: Context, url: String, private val listener: Listener) :
+    PlayerView(context), Player.Listener {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
 
+    @SuppressLint("UnsafeOptInUsageError")
+    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context)
+        .setRenderersFactory(DefaultRenderersFactory(context).setEnableDecoderFallback(true))
+        .build()
+    private val mediaItem: MediaItem = MediaItem.fromUri(url)
+    private val playerHandler = Handler(Looper.getMainLooper())
 
-    private var scaleType = ScaleType.FIT_CENTER
-    var mMediaPlayer: MediaPlayer?
-    private var mCurrentPosition = 0
-    private val mListener: Listener?
-    private var mTimer: Timer? = null
-    private var mReleased = false
-    var adDuration = Ad.DEFAULT_AD_DURATION
-        private set
+    val adDuration: Double get() = (exoPlayer.duration.toDouble() / 1000)
+
+    private val progressUpdater = object : Runnable {
+        override fun run() {
+            if (exoPlayer.isPlaying) {
+                listener.onVideoProgressChanged(
+                    (exoPlayer.currentPosition.toDouble() / 1000),
+                    (exoPlayer.duration.toDouble() / 1000)
+                )
+                playerHandler.postDelayed(this, 100)
+            }
+        }
+    }
 
     init {
-        mMediaPlayer = MediaPlayer()
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-        )
+        mainScope.launch {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            useController = false
+            player = this@AdPlayer.exoPlayer
+            setOnClickListener { listener.onClick() }
 
-        mListener = playerListener
-        surfaceTextureListener = this
-
-        try {
-            mMediaPlayer!!.setDataSource(url)
-            mMediaPlayer!!.setOnPreparedListener(this)
-            mMediaPlayer!!.setOnErrorListener(this)
-            mMediaPlayer!!.setOnCompletionListener(this)
-            mMediaPlayer!!.prepareAsync()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            throw RuntimeException(e)
+            exoPlayer.addListener(this@AdPlayer)
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
         }
-    }
-
-    fun setMuted(muted: Boolean) {
-        val vol: Float = if (muted) 0F else 1.toFloat()
-        mMediaPlayer!!.setVolume(vol, vol)
-    }
-
-    fun setScaleType(scaleType: ScaleType) {
-        this.scaleType = scaleType
-    }
-
-    fun trackProgress() {
-        if (mReleased || mMediaPlayer == null) return
-        stopTrackingProgress()
-        mTimer = Timer()
-        val task: TimerTask = object : TimerTask() {
-            override fun run() {
-                if (mListener != null) (context as Activity).runOnUiThread {
-                    try {
-                        mListener.onVideoProgressChanged(
-                            mMediaPlayer!!.currentPosition.toDouble() / 1000.0,
-                            adDuration.toDouble()
-                        )
-                    } catch (ignored: Exception) {
-                    }
-                }
-            }
-        }
-        mTimer!!.scheduleAtFixedRate(task, 0, 500)
-    }
-
-    private fun adjustScale(videoWidth: Int, videoHeight: Int) {
-        val viewWidth = this.width
-        val viewHeight = this.height
-
-        val aspectRatio = videoWidth.toDouble() / videoHeight
-
-        val newWidth: Int
-        val newHeight: Int
-
-        var xOffset = 0
-        var yOffset = 0
-
-        when (scaleType) {
-            ScaleType.CENTER_CROP -> if (viewHeight > (viewWidth / aspectRatio).toInt()) {
-                newWidth = (viewHeight * aspectRatio).toInt()
-                newHeight = viewHeight
-                xOffset = (viewWidth - newWidth) / 2
-            } else {
-                newWidth = viewWidth
-                newHeight = (viewWidth / aspectRatio).toInt()
-                yOffset = (viewHeight - newHeight) / 2
-            }
-            else -> {
-                if (viewHeight > (viewWidth / aspectRatio).toInt()) {
-                    newWidth = viewWidth
-                    newHeight = (viewWidth / aspectRatio).toInt()
-                } else {
-                    newWidth = (viewHeight * aspectRatio).toInt()
-                    newHeight = viewHeight
-                }
-                xOffset = (viewWidth - newWidth) / 2
-                yOffset = (viewHeight - newHeight) / 2
-            }
-        }
-
-        val matrix = Matrix()
-        getTransform(matrix)
-
-        matrix.setScale(newWidth.toFloat() / viewWidth, newHeight.toFloat() / viewHeight)
-        matrix.postTranslate(xOffset.toFloat(), yOffset.toFloat())
-
-        setTransform(matrix)
-    }
-
-    fun release() {
-        if (mReleased || mMediaPlayer == null) return
-        stopTrackingProgress()
-        mMediaPlayer!!.reset()
-        mMediaPlayer!!.release()
-        mReleased = true
-        mMediaPlayer = null
     }
 
     fun play() {
-        if (mReleased || mMediaPlayer == null) return
-        if (!mMediaPlayer!!.isPlaying) {
-            mMediaPlayer!!.seekTo(mCurrentPosition)
-            trackProgress()
-            mMediaPlayer!!.start()
+        mainScope.launch {
+            exoPlayer.playWhenReady = true
+            exoPlayer.play()
         }
-        mListener?.onPlay()
     }
 
     fun pause() {
-        if (mReleased || mMediaPlayer == null) return
-        try {
-            stopTrackingProgress()
-            mListener?.onPause()
-            mCurrentPosition = mMediaPlayer!!.currentPosition
-            if (mMediaPlayer!!.isPlaying) mMediaPlayer!!.pause()
-        } catch (ignored: IllegalStateException) {
-            ignored.printStackTrace()
+        mainScope.launch {
+            exoPlayer.playWhenReady = false
+            exoPlayer.pause()
         }
     }
 
-    override fun onCompletion(mediaPlayer: MediaPlayer) {
-        stopTrackingProgress()
-        mListener?.onVideoFinished()
-    }
-
-    private fun stopTrackingProgress() {
-        try {
-            mTimer?.cancel()
-            mTimer = null
-        } catch (ignored: Exception) {
+    fun setMuted(mute: Boolean) {
+        mainScope.launch {
+            exoPlayer.volume = if (mute) 0f else 1f
         }
     }
 
-    override fun onError(mediaPlayer: MediaPlayer, what: Int, extra: Int): Boolean {
-        mListener?.onVideoError()
-        return false
+    fun release() {
+        mainScope.launch {
+            playerHandler.removeCallbacks(progressUpdater)
+            if (parent != null) (parent as ViewGroup).removeView(this@AdPlayer)
+            exoPlayer.removeListener(this@AdPlayer)
+            exoPlayer.release()
+        }
     }
 
-    override fun onPrepared(mp: MediaPlayer) {
-        adjustScale(mp.videoWidth, mp.videoHeight)
-        adDuration = ceil((mp.duration / 1000).toDouble()).toInt()
-        mListener?.onVideoReady(adDuration)
+    override fun onPlaybackStateChanged(playbackState: Int) {
+
+        when (playbackState) {
+            Player.STATE_READY -> listener.onVideoReady((exoPlayer.duration.toDouble() / 1000))
+            Player.STATE_ENDED -> listener.onVideoFinished()
+        }
+
     }
 
-    override fun onSurfaceTextureSizeChanged(surfaceTexture: SurfaceTexture, i: Int, i1: Int) {
-        if (mReleased || mMediaPlayer == null) return
-        adjustScale(mMediaPlayer!!.videoWidth, mMediaPlayer!!.videoHeight)
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+
+        if (!isPlaying) {
+            listener.onPause()
+            playerHandler.removeCallbacks(progressUpdater)
+        } else {
+            listener.onPlay()
+            playerHandler.post(progressUpdater)
+        }
+
     }
 
-    override fun onSurfaceTextureDestroyed(surfaceTexture: SurfaceTexture): Boolean {
-        return false
-    }
 
-    override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, i: Int, i1: Int) {
-        if (mReleased || mMediaPlayer == null) return
-        mMediaPlayer!!.setSurface(Surface(surfaceTexture))
-    }
-
-    override fun onSurfaceTextureUpdated(surfaceTexture: SurfaceTexture) {
-        if (mReleased || mMediaPlayer == null) return
-        adjustScale(mMediaPlayer!!.videoWidth, mMediaPlayer!!.videoHeight)
+    override fun onPlayerError(error: PlaybackException) {
+        println(error)
+        mainScope.launch {
+            listener.onVideoError()
+        }
     }
 
     interface Listener {
         fun onVideoProgressChanged(position: Double, total: Double)
-        fun onVideoReady(videoDuration: Int)
+        fun onVideoReady(videoDuration: Double)
         fun onPause() {}
         fun onPlay() {}
         fun onVideoFinished()
         fun onVideoError()
-    }
-
-
-    enum class ScaleType {
-        FIT_CENTER, CENTER_CROP
+        fun onClick()
     }
 }

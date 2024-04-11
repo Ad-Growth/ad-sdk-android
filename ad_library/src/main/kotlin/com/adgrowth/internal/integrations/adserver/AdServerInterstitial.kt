@@ -1,8 +1,8 @@
 package com.adgrowth.internal.integrations.adserver
 
+import com.adgrowth.adserver.helpers.LayoutHelpers
 import com.adgrowth.internal.integrations.adserver.enums.AdType
 import com.adgrowth.internal.integrations.InterstitialManager
-import com.adgrowth.internal.integrations.adserver.helpers.ScreenHelpers
 import com.adgrowth.internal.integrations.adserver.services.GetAdService
 import com.adgrowth.internal.integrations.adserver.services.SendAdEventService
 import com.adgrowth.internal.integrations.adserver.services.interfaces.GetAdService as IGetAdService
@@ -24,7 +24,7 @@ class AdServerInterstitial(
         super.beforeLoadCheck()
 
         val options = HashMap<String, Any>()
-        options["orientation"] = ScreenHelpers.getOrientation(mContext).toString()
+        options["orientation"] = LayoutHelpers.getAdOrientation().toString()
 
         mAd = getAdService.run(options)
 
@@ -38,12 +38,6 @@ class AdServerInterstitial(
         super.show(manager)
     }
 
-
-    override fun dismiss() {
-        mContext.runOnUiThread { mListener?.onDismissed() }
-        super.dismiss()
-    }
-
     override fun setListener(listener: InterstitialIntegration.Listener) {
         mListener = listener
     }
@@ -51,6 +45,7 @@ class AdServerInterstitial(
     override fun onRunningTimeChanged(elapsedTime: Int) {
         super.onRunningTimeChanged(elapsedTime)
     }
+
 
     class Builder : InterstitialManager.Builder {
         override fun build(manager: InterstitialManager): InterstitialIntegration {

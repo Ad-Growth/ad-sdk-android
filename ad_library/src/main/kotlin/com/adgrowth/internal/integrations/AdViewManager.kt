@@ -12,25 +12,30 @@ import com.adgrowth.internal.http.HTTPStatusCode
 import com.adgrowth.internal.integrations.admob.AdMobAdView
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.AdServerAdView
-import com.adgrowth.internal.integrations.adserver.AdServerInterstitial
-
 import com.adgrowth.internal.integrations.adserver.entities.Ad
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager
 import com.adgrowth.internal.integrations.adserver.helpers.AdServerEventManager.showPermission
 import com.adgrowth.internal.integrations.adserver.helpers.IOErrorHandler
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
-import com.adgrowth.internal.interfaces.managers.AdManager
 import com.adgrowth.internal.interfaces.integrations.AdViewIntegration
-import java.util.*
+import com.adgrowth.internal.interfaces.managers.AdManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.Timer
+import java.util.TimerTask
 
 class AdViewManager(
     private val mUnitId: String,
 ) : AdManager<AdViewIntegration.Listener, AdViewManager.Builder>(),
     Application.ActivityLifecycleCallbacks, AdServerEventManager.FullScreenListener {
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private var mAd: AdViewIntegration? = null
     override lateinit var listener: AdViewIntegration.Listener
-
     private var mRefreshTimer: Timer? = null
+    var isLoaded = false
+        private set
     var isFailed = false
         private set
     private var mCurrentRefreshTime: Int = 0
@@ -74,10 +79,12 @@ class AdViewManager(
         this.orientation = orientation
         this.mAd = null
 
-        Thread {
+        ioScope.launch {
             while (mAd == null && builder != null) {
                 try {
-                    mAd = builder!!.build(this).load(this)
+                    isLoaded = false
+                    mAd = builder!!.build(this@AdViewManager).load(this@AdViewManager)
+                    isLoaded = true
                     listener.onLoad(mAd!!)
                     break
                 } catch (e: APIIOException) {
@@ -86,7 +93,8 @@ class AdViewManager(
                         val meta = JSONHelper.safeGetObject(e.body, "meta")
 
                         if (meta.has("refresh_rate")) {
-                            refreshRate = JSONHelper.safeGetInt(meta, "refresh_rate", null)
+                            refreshRate =
+                                JSONHelper.safeGetInt(meta, "refresh_rate", null)?.toDouble()
                         }
 
                         builder = getNextIntegration()
@@ -113,7 +121,7 @@ class AdViewManager(
                 isFailed = true
                 listener.onFailedToLoad(AdRequestException(AdRequestException.NO_AD_FOUND))
             }
-        }.start()
+        }
     }
 
 
@@ -122,7 +130,7 @@ class AdViewManager(
         context.application.registerActivityLifecycleCallbacks(this)
         AdServerEventManager.registerFullScreenListener(this)
 
-        context.runOnUiThread {
+        mainScope.launch {
             stopRefreshTimer()
             mAd?.placeIn(parent)
             mCurrentRefreshTime = 0
@@ -131,7 +139,7 @@ class AdViewManager(
     }
 
     fun reload(parent: ViewGroup) {
-        context.runOnUiThread {
+        mainScope.launch {
             stopRefreshTimer()
             if (parent.indexOfChild(mAd) >= 0) parent.removeView(mAd)
             load(context, size, orientation)
@@ -170,6 +178,8 @@ class AdViewManager(
         stopRefreshTimer()
         context.application.unregisterActivityLifecycleCallbacks(this)
         AdServerEventManager.unregisterFullScreenListener(this)
+        mAd?.release()
+        mAd = null
     }
 
 
@@ -196,17 +206,24 @@ class AdViewManager(
             stopRefreshTimer()
             AdServerEventManager.unregisterFullScreenListener(this)
             context.application?.unregisterActivityLifecycleCallbacks(this)
+            release()
         }
     }
 
     override fun onFullScreenShown(instanceHash: Int) {
-        stopRefreshTimer()
-        mAd?.pauseAd()
+        mAd?.apply {
+            stopRefreshTimer()
+            hide()
+            pauseAd()
+        }
     }
 
     override fun onFullScreenDismissed() {
-        startRefreshTimer()
-        mAd?.resumeAd()
+        mAd?.apply {
+            startRefreshTimer()
+            unhide()
+            resumeAd()
+        }
     }
 
 
@@ -215,7 +232,7 @@ class AdViewManager(
     }
 
     companion object {
-        private const val AFTER_ERROR_REFRESH_RATE = 10
+        private const val AFTER_ERROR_REFRESH_RATE = 10.0
     }
 
 }

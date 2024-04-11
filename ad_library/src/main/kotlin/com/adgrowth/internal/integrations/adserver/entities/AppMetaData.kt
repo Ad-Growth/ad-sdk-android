@@ -1,10 +1,12 @@
 package com.adgrowth.internal.integrations.adserver.entities
 
+import com.adgrowth.internal.integrations.InitializationManager.Companion.APP_PACKAGE_NAME
 import com.adgrowth.internal.integrations.admob.AdMobInitializer
 import com.adgrowth.internal.integrations.adserver.helpers.JSONHelper
 import org.json.JSONObject
 
 data class AppMetaData(val json: JSONObject) {
+    val appId: String = JSONHelper.safeGetString(json, "app_id", APP_PACKAGE_NAME)!!
     val ipAddress: String = JSONHelper.safeGetString(json, "ip_address")
     val isDevKey: Boolean = JSONHelper.safeGetBoolean(json, "is_dev_key", false)
     var adMob: Integration? = null

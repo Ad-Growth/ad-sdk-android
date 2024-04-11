@@ -1,6 +1,5 @@
 package com.adgrowth.internal.integrations.adserver.views
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.ViewGroup
@@ -11,11 +10,14 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class AdImage(context: Context?, url: String, imageListener: Listener?) : ImageView(context),
+class AdImage(context: Context?, private val url: String, private val listener: Listener) :
+    ImageView(context),
     RequestListener<Drawable?> {
-    private val mListener: Listener?
-    private val mUrl: String
+    private val mainScope = CoroutineScope(Dispatchers.Main)
 
     init {
         layoutParams = ViewGroup.LayoutParams(
@@ -23,13 +25,20 @@ class AdImage(context: Context?, url: String, imageListener: Listener?) : ImageV
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         translationZ = 2f
-        mListener = imageListener
-        this.mUrl = url
+
         Glide.with(context!!).load(url).listener(this).preload()
+        setOnClickListener { listener.onClick() }
     }
 
-    private fun runOnUiThread(runnable: Runnable?) {
-        (context as Activity).runOnUiThread(runnable)
+    fun release() {
+        mainScope.launch {
+            try {
+                Glide.with(context).clear(this@AdImage)
+                setImageDrawable(null)
+                if (parent != null) (parent as ViewGroup).removeView(this@AdImage)
+            } catch (_: Exception) {
+            }
+        }
     }
 
     override fun onLoadFailed(
@@ -38,7 +47,7 @@ class AdImage(context: Context?, url: String, imageListener: Listener?) : ImageV
         target: Target<Drawable?>,
         isFirstResource: Boolean
     ): Boolean {
-        runOnUiThread { mListener!!.onImageError() }
+        mainScope.launch { listener.onImageError() }
         return false
     }
 
@@ -51,14 +60,15 @@ class AdImage(context: Context?, url: String, imageListener: Listener?) : ImageV
     ): Boolean {
         if (resource is GifDrawable) resource.setLoopCount(GifDrawable.LOOP_FOREVER)
         setImageDrawable(resource)
-        runOnUiThread {
-            mListener!!.onImageReady()
-            Glide.with(context).load(mUrl).into(this@AdImage)
+        mainScope.launch {
+            listener.onImageReady()
+            Glide.with(context).load(url).into(this@AdImage)
         }
         return false
     }
 
     interface Listener {
+        fun onClick()
         fun onImageReady()
         fun onImageError()
     }

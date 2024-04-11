@@ -1,11 +1,12 @@
 package com.adgrowth.internal.integrations.adserver
 
-import android.content.DialogInterface
+
 import com.adgrowth.adserver.BuildConfig
 import com.adgrowth.adserver.R
+import com.adgrowth.adserver.helpers.LayoutHelpers
+import com.adgrowth.internal.integrations.InitializationManager
 import com.adgrowth.internal.integrations.RewardedManager
 import com.adgrowth.internal.integrations.adserver.enums.AdType
-import com.adgrowth.internal.integrations.adserver.helpers.ScreenHelpers
 import com.adgrowth.internal.integrations.adserver.services.GetAdService
 import com.adgrowth.internal.integrations.adserver.services.SendAdEventService
 import com.adgrowth.internal.interfaces.integrations.RewardedIntegration
@@ -22,8 +23,8 @@ class AdServerRewarded(
     private var mRewarded = false
 
 
-    override fun onShow(dialogInterface: DialogInterface?) {
-        super.onShow(dialogInterface)
+    override fun onShow() {
+        super.onShow()
         mDialog?.showButtonText()
     }
 
@@ -36,7 +37,7 @@ class AdServerRewarded(
         super.beforeLoadCheck()
 
         val options = HashMap<String, Any>()
-        options["orientation"] = ScreenHelpers.getOrientation(mContext).toString()
+        options["orientation"] = LayoutHelpers.getAdOrientation().toString()
 
         mAd = getAdService.run(options)
 
@@ -48,11 +49,6 @@ class AdServerRewarded(
 
     override fun show(manager: RewardedManager) {
         super.show(manager)
-    }
-
-    override fun dismiss() {
-        super.dismiss()
-        mContext.runOnUiThread { mListener!!.onDismissed() }
     }
 
     override fun setListener(listener: RewardedIntegration.Listener) {
@@ -103,7 +99,11 @@ class AdServerRewarded(
 
     companion object {
         const val TEST_UNIT_ID: String = "rewarded"
-        private const val TIME_TO_REWARD = BuildConfig.TIME_TO_REWARD
+        private val TIME_TO_REWARD: Double
+            get() {
+                if (InitializationManager.APP_META_DATA.isDevKey || BuildConfig.DEBUG) return 10.0
+                return 30.0
+            }
         private const val TIME_TO_SHOW_TAP_TO_CLOSE = -3
     }
 }

@@ -8,13 +8,16 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.CompletableFuture
 import com.adgrowth.internal.integrations.admob.services.interfaces.GetAdService as IGetAdService
 
 
 class GetRewardedAdService(override val manager: RewardedManager) :
     IGetAdService<RewardedAd>(manager) {
-
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     override fun run(adRequest: AdRequest): RewardedAd {
         val context = manager.context
         val future = CompletableFuture<RewardedAd>()
@@ -31,7 +34,7 @@ class GetRewardedAdService(override val manager: RewardedManager) :
             }
         }
 
-        context.runOnUiThread {
+        mainScope.launch {
             RewardedAd.load(context, manager.unitId, adRequest, listener)
         }
 
